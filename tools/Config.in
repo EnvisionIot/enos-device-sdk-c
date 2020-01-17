@@ -1,0 +1,9 @@
+mainmenu "Main Menu"
+comment "Configure C-SDK for EnOS IoT Devices"
+
+source "tools/menu/Config.infra"
+source "tools/menu/Config.dev_sign"
+source "tools/menu/Config.mqtt"
+source "tools/menu/Config.dynamic_activate"
+source "tools/menu/Config.dev_model"
+source "tools/menu/Config.wrappers"

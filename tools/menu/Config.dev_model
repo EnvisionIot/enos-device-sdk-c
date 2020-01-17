@@ -1,0 +1,53 @@
+config DEVICE_MODEL_ENABLED
+    depends on MQTT_COMM_ENABLED
+
+    bool "FEATURE_DEVICE_MODEL_ENABLED"
+    select INFRA_COMPAT
+    select INFRA_CJSON
+    default y
+    help
+        Enable providing EnOS Thing Model/Device Protocol encapulation in SDK
+
+        Switching to "y" leads to SDK being able to interpret JSON payload in MQTT channel, which also called "EnOS Device Protocol"
+        Those capabilities are provided via IOT_EnOS_XXX() APIs 
+
+menu "Device Model Configurations"
+    depends on DEVICE_MODEL_ENABLED
+
+    #config DEVICE_MODEL_GATEWAY
+    #    bool "FEATURE_DEVICE_MODEL_GATEWAY"
+    #    select INFRA_SHA256
+    #    default n
+    #    help
+    #        Switching Thing-Model related implementations provided in gateway oriented way
+
+    config DEVICE_MODEL_RAWDATA_SOLO
+        bool "FEATURE_DEVICE_MODEL_RAWDATA_SOLO"
+        depends on DEVICE_MODEL_ENABLED && !DEVICE_MODEL_GATEWAY
+        default n
+        help
+            Enable only raw data function via IOT_Linkkit_xxx new APIs
+
+            Switching to "y" leads to SDK being compiled only raw data function
+            Switching to "n" leads to SDK being compiled both raw data and thing model function
+
+#   config OTA_ENABLED
+#	bool "FEATURE_OTA_ENABLED"
+#	default n
+#	help
+#	    Over-the-air feature
+#
+#            Switching to "y" leads to SDK being compiled with ota function
+#            Switching to "n" leads to SDK being compiled without ota function
+
+    #config DEVICE_MODEL_SUBDEV_OTA
+    #    depends on DEVICE_MODEL_GATEWAY
+    #    depends on OTA_ENABLED
+    #    bool "FEATURE_DEVICE_MODEL_SUBDEV_OTA"
+    #    default n
+
+    config DEVICE_MEASUREPOINT_RESUME
+        bool "FEATURE_DEVICE_MEASUREPOINT_RESUME"
+        default y
+endmenu
+

@@ -1,0 +1,5 @@
+config DYNAMIC_ACTIVATE
+    bool "FEATURE_DYNAMIC_ACTIVATE"
+    default n
+    select INFRA_STRING
+    select INFRA_SHA256
