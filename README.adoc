@@ -169,7 +169,7 @@ Information or Receiving Passed-through Information from Cloud]
 https://support.envisioniot.com/docs/device-connection/en/latest/device_management_overview.html[EnOS
 IoT Hub Documentation].
 * To learn more about how to develop your device for EnOS IoT Hub, see
-link:[EnOS Device Development Guide (C)].
+link:[EnOS Device Development Guide +(C)+].
 
 == API Reference
 
