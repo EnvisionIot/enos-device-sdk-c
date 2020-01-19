@@ -1163,7 +1163,7 @@ static void iotx_mc_parse_identity_response(iotx_mqtt_topic_info_pt topic_msg)
 
         HAL_Free(payload);
 
-        /* parse payload then set product key and device name */
+        /* parse payload then set product key and device key */
         {
             char *product_key = NULL, *device_key = NULL, *str_product_key = NULL, *str_device_name = NULL;
             uint32_t product_key_len = 0, device_name_len = 0;

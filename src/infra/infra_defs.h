@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 #define NETWORK_ADDR_LEN                (16)
-#define HAL_MAC_LEN                     (17 + 1)    /* MAC地址的长度 */
+#define HAL_MAC_LEN                     (17 + 1)    /* length of MAC address */
 #define STR_SHORT_LEN                   (32)
 #ifndef ETH_ALEN
     #define ETH_ALEN                    (6)
@@ -191,7 +191,7 @@ typedef enum IOT_RETURN_CODES {
     ERROR_JUDGE_DGR_FAILED = -6277, /**< judge device group relation failed*/
     ERROR_QUERY_AGR_FAILED = -6278, /**< query apply group relation failed*/
     ERROR_JUDGE_AGR_FAILED = -6279, /**< judge apply group relation failed*/
-    ERROR_DEVICENAME_NOT_MEET_SPECS = -6280, /**< devicename not meet specs*/
+    ERROR_DEVICE_KEY_NOT_MEET_SPECS = -6280, /**< deviceKey not meet specs*/
     ERROR_DELETE_APPLY_DEVICE_FAILED = -6281, /**< delete apply device failed*/
     ERROR_GEN_DEVICEID_FAILED = -6282, /**< gennerate deviceId failed*/
     ERROR_APPLY_ILLEGAL = -6283, /**< apply illegal*/

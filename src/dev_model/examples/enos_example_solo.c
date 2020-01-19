@@ -367,7 +367,7 @@ void user_sample_update_attribute(void) {
 void user_sample_delete_attribute(void) {
     int res = 0;
     char attribute_payload[50] = {0};
-    HAL_Snprintf(attribute_payload, sizeof(attribute_payload), "{\"attributes\":[\"维吾尔\"]}");
+    HAL_Snprintf(attribute_payload, sizeof(attribute_payload), "{\"attributes\":[\"Shanghai\"]}");
 
     res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_DELETE_ATTRIBUTE, (unsigned char*)attribute_payload, strlen(attribute_payload));
 

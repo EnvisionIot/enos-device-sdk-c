@@ -127,7 +127,7 @@ int _sign_get_clientid(char *clientid_string, const char *device_id, const char 
     return STATE_SUCCESS;
 }
 
-#define SIGN_FMT_LEN  50  /*  "clientId%sdeviceName%sproductKey%stimestamp%s";*/
+#define SIGN_FMT_LEN  50  /*  "clientId%sdeviceKey%sproductKey%stimestamp%s";*/
 int _iotx_generate_sign_string(const char *device_id, const char *device_key, const char *product_key,
                                const char *device_secret, char *sign_string)
 {

@@ -138,7 +138,7 @@ void *IOT_MQTT_Construct(iotx_mqtt_param_t *pInitParams)
         return NULL;
     }
     if (meta_info.device_key[IOTX_DEVICE_KEY_LEN] != '\0') {
-        iotx_state_event(ITE_STATE_USER_INPUT, STATE_USER_INPUT_DN, "invalid device name");
+        iotx_state_event(ITE_STATE_USER_INPUT, STATE_USER_INPUT_DN, "invalid device key");
         return NULL;
     }
 

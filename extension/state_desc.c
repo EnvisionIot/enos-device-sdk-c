@@ -11,7 +11,7 @@ static code_desc_t user_input_desc[] = {
     {STATE_USER_INPUT_OUT_RANGE, "Some user input parameter(s) has value out of acceptable range"},
     {STATE_USER_INPUT_PK, "User input parameters contain unacceptable productKey"},
     {STATE_USER_INPUT_PS, "User input parameters contain unacceptable productSecret"},
-    {STATE_USER_INPUT_DN, "User input parameters contain unacceptable deviceName"},
+    {STATE_USER_INPUT_DN, "User input parameters contain unacceptable deviceKey"},
     {STATE_USER_INPUT_DS, "User input parameters contain unacceptable deviceSecret"},
     {STATE_USER_INPUT_HTTP_DOMAIN, "User input parameters contain unacceptable HTTP domain name"},
     {STATE_USER_INPUT_MQTT_DOMAIN, "User input parameters contain unacceptable MQTT domain name"},

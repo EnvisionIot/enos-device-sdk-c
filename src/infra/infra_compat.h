@@ -151,14 +151,14 @@ typedef enum {
     IOTX_IOCTL_SET_CUSTOMIZE_INFO,      /* value(char*): set mqtt clientID customize information */
     IOTX_IOCTL_SET_MQTT_PORT,           /* value(uint16_t *) modify mqtt server port number */
     IOTX_IOCTL_SET_PROXY_REGISTER,      /* value(int*): 0 - Disable proxy product register, 1 - Enable proxy product register */
-    IOTX_IOCTL_QUERY_DEVID,             /* value(iotx_dev_meta_info_t*): device meta info, only productKey and deviceName is required, ret value is subdev_id or -1 */
+    IOTX_IOCTL_QUERY_DEVID,             /* value(iotx_dev_meta_info_t*): device meta info, only productKey and deviceKey is required, ret value is subdev_id or -1 */
     IOTX_IOCTL_SUB_USER_TOPIC,          /* subscribe a topic according to user topic and callback */
     IOTX_IOCTL_SET_PRODUCT_KEY,         /* vale(char *) - set product key */
     IOTX_IOCTL_GET_PRODUCT_KEY,         /* vale(char[IOTX_PRODUCT_KEY_LEN + 1]) - get product key */
     IOTX_IOCTL_SET_PRODUCT_SECRET,      /* vale(char *) - set product secret */
     IOTX_IOCTL_GET_PRODUCT_SECRET,      /* vale(char[IOTX_PRODUCT_SECRET_LEN + 1]) - get product secret */
-    IOTX_IOCTL_SET_DEVICE_KEY,         /* vale(char *) - set device name */
-    IOTX_IOCTL_GET_DEVICE_KEY,         /* vale(char[IOTX_DEVICE_KEY_LEN + 1]) - get device name */
+    IOTX_IOCTL_SET_DEVICE_KEY,         /* vale(char *) - set device key */
+    IOTX_IOCTL_GET_DEVICE_KEY,         /* vale(char[IOTX_DEVICE_KEY_LEN + 1]) - get device key */
     IOTX_IOCTL_SET_DEVICE_SECRET,       /* vale(char *) - set device secret */
     IOTX_IOCTL_GET_DEVICE_SECRET        /* vale(char[IOTX_DEVICE_SECRET_LEN + 1]) - get device secret */
 } iotx_ioctl_option_t;

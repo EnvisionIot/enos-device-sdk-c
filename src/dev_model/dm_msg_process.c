@@ -109,7 +109,7 @@ int dm_msg_proc_thing_model_down_raw(_IN_ dm_msg_source_t *source)
     char product_key[IOTX_PRODUCT_KEY_LEN + 1] = {0};
     char device_key[IOTX_DEVICE_KEY_LEN + 1] = {0};
 
-    /* Parse Product Key And Device Name */
+    /* Parse Product Key And Device Key */
     res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
                                 device_key);
     if (res != SUCCESS_RETURN) {
@@ -737,7 +737,7 @@ int dm_msg_proc_thing_model_user_sub(_IN_ dm_msg_source_t *source)
     char product_key[IOTX_PRODUCT_KEY_LEN] = {0};
     char device_key[IOTX_DEVICE_KEY_LEN] = {0};
 
-    /* Parse Product Key And Device Name */
+    /* Parse Product Key And Device Key */
     res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
                                 device_key);
     if (res != SUCCESS_RETURN) {
