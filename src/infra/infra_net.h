@@ -7,6 +7,10 @@
 
 #include "infra_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief The structure of network connection(TCP or SSL).
  *   The user has to allocate memory for this structure.
@@ -45,6 +49,10 @@ int utils_net_write(utils_network_pt pNetwork, const char *buffer, uint32_t len,
 int iotx_net_disconnect(utils_network_pt pNetwork);
 int iotx_net_connect(utils_network_pt pNetwork);
 int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, const char *ca_crt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* IOTX_COMMON_NET_H */
 

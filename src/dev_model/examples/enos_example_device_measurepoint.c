@@ -119,7 +119,6 @@ void user_sample_post_measurepoint(void)
     EXAMPLE_TRACE("Post Measurepoint Message ID: %d, payload: %s", res, measurepoint_payload);
 }
 
-
 void user_sample_post_measurepoint_batch(void)
 {
     static int cnt = 0;
@@ -136,7 +135,7 @@ void user_sample_post_measurepoint_batch(void)
     cJSON_AddNumberToObject(measurepoint, "mp2", cnt++);
     cJSON_AddItemToObject(item, "measurepoints", measurepoint);
 
-    cJSON_AddNumberToObject(item, "time", HAL_UptimeMs() * 1000 + i * 500);
+    cJSON_AddNumberToObject(item, "time", HAL_UptimeMs());
 
     cJSON_AddItemReferenceToArray(root, item);
 
@@ -170,8 +169,10 @@ void user_sample_resume_measurepoint(void)
     char measurepoint_payload[50] = {0};
     HAL_Snprintf(measurepoint_payload, sizeof(measurepoint_payload), "{\"measurepoints\":{\"mp1\":%d}}", cnt++);
 
+#ifdef DEVICE_MEASUREPOINT_RESUME
     res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_RESUME_MEASUREPOINT,
                           (unsigned char *)measurepoint_payload, strlen(measurepoint_payload));
+#endif
 
     request_id = res;
 
@@ -211,18 +212,20 @@ void user_sample_resume_measurepoint_batch(void)
     cJSON_Delete(root);
     cJSON_free(out);
 
+#ifdef DEVICE_MEASUREPOINT_RESUME
     res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_RESUME_MEASUREPOINT_BATCH,
                           (unsigned char *)measurepoint_payload, strlen(measurepoint_payload));
+#endif
 
     request_id = res;
 
     EXAMPLE_TRACE("Post Measurepoint Message ID: %d, payload: %s", res, measurepoint_payload);
 }
 
-static char g_product_key[IOTX_PRODUCT_KEY_LEN + 1] = "ZTUTEcNf";
-static char g_product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "FV2YOdkPWep";
-static char g_device_key[IOTX_DEVICE_KEY_LEN + 1] = "oBLcN1Ruj2";
-static char g_device_secret[IOTX_DEVICE_SECRET_LEN + 1] = "HTtewna5Gih31UFRVzCX";
+static char g_product_key[IOTX_PRODUCT_KEY_LEN + 1] = "product_key";
+static char g_product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "product_secret";
+static char g_device_key[IOTX_DEVICE_KEY_LEN + 1] = "device_key";
+static char g_device_secret[IOTX_DEVICE_SECRET_LEN + 1] = "device_secret";
 
 int main(int argc, char **argv)
 {
@@ -257,7 +260,7 @@ int main(int argc, char **argv)
     IOT_RegisterCallback(ITE_INITIALIZE_COMPLETED, user_initialized);
     IOT_RegisterCallback(ITE_CLOUD_ERROR, user_cloud_error_handler);
 
-    char mqtt_uri[50] = "beta-iot-as-mqtt-cn4.eniot.io";
+    char mqtt_uri[50] = "mqtt_domain_url";
     IOT_Ioctl(IOTX_IOCTL_SET_MQTT_DOMAIN, (void *)mqtt_uri);
 
     int mqtt_port = 11883;

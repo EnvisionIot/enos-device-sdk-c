@@ -63,7 +63,7 @@ uint64_t HAL_UptimeMs(void)
     uint64_t            time_ms;
     struct timespec     ts;
 
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(CLOCK_REALTIME, &ts);
     time_ms = ((uint64_t)ts.tv_sec * (uint64_t)1000) + (ts.tv_nsec / 1000 / 1000);
 
     return time_ms;

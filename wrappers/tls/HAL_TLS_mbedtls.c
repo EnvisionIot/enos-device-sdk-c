@@ -554,7 +554,7 @@ static int _TLSConnectNetwork(TLSDataParams_t *pTlsData, const char *addr, const
         char product_key[IOTX_PRODUCT_KEY_LEN + 1] = {0};
         char device_key[IOTX_DEVICE_KEY_LEN + 1] = {0};
         char device_secret[IOTX_DEVICE_SECRET_LEN + 1] = {0};
-        char *auth_type = "devicename";
+        char *auth_type = "deviceKey";
         char *sign_method = "hmacsha256";
         char *timestamp = "2524608000000";
         char *psk_identity = NULL, string_to_sign[IOTX_PRODUCT_KEY_LEN + IOTX_DEVICE_KEY_LEN + 33] = {0};

@@ -13,4 +13,4 @@ FINAL_DIR       := $(DIST_DIR)/release
 
 # Settings of project info
 PRJ_NAME        := enos-iot-c-sdk
-PRJ_VERSION     := 0.1.0
+PRJ_VERSION     := 0.1.1

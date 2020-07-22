@@ -10,6 +10,10 @@
 
 #include "infra_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     uint32_t time;
 } iotx_time_t;
@@ -28,7 +32,9 @@ void iotx_time_init(iotx_time_t *timer);
 void utils_time_countdown_ms(iotx_time_t *timer, uint32_t millisecond);
 
 uint32_t utils_time_get_ms(void);
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* _IOTX_COMMON_TIMER_H_ */
 
 

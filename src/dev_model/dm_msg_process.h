@@ -70,23 +70,26 @@ extern const char DM_URI_THING_MODEL_UP_RAW_REPLY[]          DM_READ_ONLY;
 
 #ifdef DEVICE_MODEL_GATEWAY
     /* From Cloud To Local Request And Response*/
-    extern const char DM_URI_THING_TOPO_ADD_NOTIFY[]              DM_READ_ONLY;
-    extern const char DM_URI_THING_TOPO_ADD_NOTIFY_REPLY[]        DM_READ_ONLY;
     extern const char DM_URI_THING_DISABLE[]                      DM_READ_ONLY;
     extern const char DM_URI_THING_DISABLE_REPLY[]                DM_READ_ONLY;
     extern const char DM_URI_THING_ENABLE[]                       DM_READ_ONLY;
     extern const char DM_URI_THING_ENABLE_REPLY[]                 DM_READ_ONLY;
     extern const char DM_URI_THING_DELETE[]                       DM_READ_ONLY;
     extern const char DM_URI_THING_DELETE_REPLY[]                 DM_READ_ONLY;
-    extern const char DM_URI_THING_GATEWAY_PERMIT[]               DM_READ_ONLY;
-    extern const char DM_URI_THING_GATEWAY_PERMIT_REPLY[]         DM_READ_ONLY;
+
+    extern const char DM_URI_COMBINE_DISABLE[]                      DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_DISABLE_REPLY[]                DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_ENABLE[]                       DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_ENABLE_REPLY[]                 DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_DELETE[]                       DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_DELETE_REPLY[]                 DM_READ_ONLY;
 
     /* From Local To Cloud Request And Response*/
-    extern const char DM_URI_THING_SUB_REGISTER[]                 DM_READ_ONLY;
-    extern const char DM_URI_THING_SUB_REGISTER_REPLY[]           DM_READ_ONLY;
+    extern const char DM_URI_THING_DEVICE_REGISTER[]                 DM_READ_ONLY;
+    extern const char DM_URI_THING_DEVICE_REGISTER_REPLY[]           DM_READ_ONLY;
     extern const char DM_URI_THING_PROXY_PRODUCT_REGISTER[]       DM_READ_ONLY;
     extern const char DM_URI_THING_PROXY_PRODUCT_REGISTER_REPLY[] DM_READ_ONLY;
-    extern const char DM_URI_THING_SUB_REGISTER_REPLY[]           DM_READ_ONLY;
+    extern const char DM_URI_THING_DEVICE_REGISTER_REPLY[]           DM_READ_ONLY;
     extern const char DM_URI_THING_SUB_UNREGISTER[]               DM_READ_ONLY;
     extern const char DM_URI_THING_SUB_UNREGISTER_REPLY[]         DM_READ_ONLY;
     extern const char DM_URI_THING_TOPO_ADD[]                     DM_READ_ONLY;
@@ -95,10 +98,10 @@ extern const char DM_URI_THING_MODEL_UP_RAW_REPLY[]          DM_READ_ONLY;
     extern const char DM_URI_THING_TOPO_DELETE_REPLY[]            DM_READ_ONLY;
     extern const char DM_URI_THING_TOPO_GET[]                     DM_READ_ONLY;
     extern const char DM_URI_THING_TOPO_GET_REPLY[]               DM_READ_ONLY;
-    extern const char DM_URI_THING_LIST_FOUND[]                   DM_READ_ONLY;
-    extern const char DM_URI_THING_LIST_FOUND_REPLY[]             DM_READ_ONLY;
     extern const char DM_URI_COMBINE_LOGIN[]                      DM_READ_ONLY;
     extern const char DM_URI_COMBINE_LOGIN_REPLY[]                DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_LOGIN_BATCH[]                DM_READ_ONLY;
+    extern const char DM_URI_COMBINE_LOGIN_BATCH_REPLY[]          DM_READ_ONLY;
     extern const char DM_URI_COMBINE_LOGOUT[]                     DM_READ_ONLY;
     extern const char DM_URI_COMBINE_LOGOUT_REPLY[]               DM_READ_ONLY;
 #endif
@@ -127,16 +130,20 @@ int dm_msg_proc_thing_enable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *d
                              _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response);
 int dm_msg_proc_thing_delete(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
                              _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response);
+int dm_msg_proc_combine_disable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
+                              _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response);
+int dm_msg_proc_combine_enable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
+                             _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response);
+int dm_msg_proc_combine_delete(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
+                             _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response);
 int dm_msg_proc_thing_gateway_permit(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
                                      _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response);
-int dm_msg_proc_thing_sub_register_reply(_IN_ dm_msg_source_t *source);
-int dm_msg_proc_thing_proxy_product_register_reply(_IN_ dm_msg_source_t *source);
-int dm_msg_proc_thing_sub_unregister_reply(_IN_ dm_msg_source_t *source);
+int dm_msg_proc_thing_device_register_reply(_IN_ dm_msg_source_t *source);
 int dm_msg_proc_thing_topo_add_reply(_IN_ dm_msg_source_t *source);
 int dm_msg_proc_thing_topo_delete_reply(_IN_ dm_msg_source_t *source);
 int dm_msg_proc_thing_topo_get_reply(_IN_ dm_msg_source_t *source);
-int dm_msg_proc_thing_list_found_reply(_IN_ dm_msg_source_t *source);
 int dm_msg_proc_combine_login_reply(_IN_ dm_msg_source_t *source);
+int dm_msg_proc_combine_login_batch_reply(_IN_ dm_msg_source_t *source);
 int dm_msg_proc_combine_logout_reply(_IN_ dm_msg_source_t *source);
 #endif
 

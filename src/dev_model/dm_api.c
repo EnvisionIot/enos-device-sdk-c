@@ -392,16 +392,6 @@ int iotx_dm_send_service_invoke_response(_IN_ int devid, _IN_ char *msgid, _IN_ 
 }
 
 #ifdef DEVICE_MODEL_GATEWAY
-int iotx_dm_query_topo_list(void)
-{
-    int res = 0;
-
-    _dm_api_lock();
-    res = dm_mgr_upstream_thing_topo_get();
-    _dm_api_unlock();
-
-    return res;
-}
 
 int iotx_dm_subdev_query(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                          _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
@@ -471,54 +461,7 @@ int iotx_dm_subdev_register(_IN_ int devid)
         return SUCCESS_RETURN;
     }
 
-    res = dm_mgr_upstream_thing_sub_register(devid);
-
-    _dm_api_unlock();
-    return res;
-}
-
-int iotx_dm_subdev_proxy_register(_IN_ int devid)
-{
-    int res = 0;
-    dm_mgr_dev_node_t *search_node = NULL;
-
-    if (devid < 0)
-    {
-        return STATE_USER_INPUT_INVALID;
-    }
-
-    _dm_api_lock();
-    res = dm_mgr_search_device_node_by_devid(devid, (void **)&search_node);
-    if (res != SUCCESS_RETURN)
-    {
-        _dm_api_unlock();
-        return STATE_DEV_MODEL_DEVICE_NOT_FOUND;
-    }
-
-    if ((strlen(search_node->device_secret) > 0) && (strlen(search_node->device_secret) < IOTX_DEVICE_SECRET_LEN + 1))
-    {
-        _dm_api_unlock();
-        return SUCCESS_RETURN;
-    }
-
-    res = dm_mgr_upstream_thing_proxy_product_register(devid);
-
-    _dm_api_unlock();
-    return res;
-}
-
-int iotx_dm_subdev_unregister(_IN_ int devid)
-{
-    int res = 0;
-
-    if (devid < 0)
-    {
-        return STATE_USER_INPUT_INVALID;
-    }
-
-    _dm_api_lock();
-
-    res = dm_mgr_upstream_thing_sub_unregister(devid);
+    res = dm_mgr_upstream_thing_device_register(devid);
 
     _dm_api_unlock();
     return res;
@@ -558,6 +501,17 @@ int iotx_dm_subdev_topo_del(_IN_ int devid)
     return res;
 }
 
+int iotx_dm_topo_get(void)
+{
+    int res = 0;
+
+    _dm_api_lock();
+    res = dm_mgr_upstream_thing_topo_get();
+    _dm_api_unlock();
+
+    return res;
+}
+
 int iotx_dm_subdev_login(_IN_ int devid)
 {
     int res = 0;
@@ -570,6 +524,23 @@ int iotx_dm_subdev_login(_IN_ int devid)
     _dm_api_lock();
 
     res = dm_mgr_upstream_combine_login(devid);
+
+    _dm_api_unlock();
+    return res;
+}
+
+int iotx_dm_subdev_login_batch(_IN_ int devid, int* sub_devids, int sub_devids_len)
+{
+    int res = 0;
+
+    if (devid < 0)
+    {
+        return STATE_USER_INPUT_INVALID;
+    }
+
+    _dm_api_lock();
+
+    res = dm_mgr_upstream_combine_login_batch(devid, sub_devids, sub_devids_len);
 
     _dm_api_unlock();
     return res;

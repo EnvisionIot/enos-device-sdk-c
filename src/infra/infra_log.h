@@ -5,6 +5,9 @@
 #include "infra_defs.h"
 #include "wrappers.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define LITE_printf                     HAL_Printf
 #define LITE_snprintf                   HAL_Snprintf
@@ -112,6 +115,10 @@ void    LITE_rich_hexdump(const char *f, const int l,
     LITE_rich_hexdump(__func__, __LINE__, LOG_INFO_LEVEL, #buf, (const void *)buf, (const int)len)
 
 int     iotx_facility_json_print(const char *str, int level, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -3,6 +3,10 @@
 
 #include "infra_defs.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #undef  being_deprecated
 #define being_deprecated
 
@@ -56,11 +60,15 @@ typedef enum {
     ITE_SERVICE_REQUEST,
     ITE_MEASUREPOINT_SET,
     ITE_MEASUREPOINT_GET,
-    ITE_REPORT_REPLY,
+/*    ITE_REPORT_REPLY, */
     ITE_THING_REPLY,
-    ITE_TIMESTAMP_REPLY,
-    ITE_TOPOLIST_REPLY,
-    ITE_PERMIT_JOIN,
+/*    ITE_TIMESTAMP_REPLY,*/
+    ITE_TOPO_GET_REPLY,
+/*    ITE_PERMIT_JOIN,*/
+    ITE_DEVICE_REGISTER_REPLY,
+    ITE_COMBINE_DISABLE,
+    ITE_COMBINE_ENABLE,
+    ITE_COMBINE_DELETE,
     ITE_INITIALIZE_COMPLETED,
     ITE_MQTT_CONNECT_SUCC,
     ITE_CLOUD_ERROR,
@@ -88,17 +96,19 @@ DECLARE_EVENT_CALLBACK(ITE_CONNECT_SUCC,         int (*cb)(void))
 DECLARE_EVENT_CALLBACK(ITE_CONNECT_FAIL,         int (*cb)(void))
 DECLARE_EVENT_CALLBACK(ITE_DISCONNECTED,         int (*cb)(void))
 DECLARE_EVENT_CALLBACK(ITE_RAWDATA_ARRIVED,      int (*cb)(const int, const unsigned char *, const int))
-/* DECLARE_EVENT_CALLBACK(ITE_SERVICE_REQUEST,      int (*cb)(const int, const char *, const int, const char *, const int,
-                       char **, int *)) */
+/* DECLARE_EVENT_CALLBACK(ITE_SERVICE_REQUEST,      int (*cb)(const int, const char *, const int, const char *, const int, char **, int *)) */
 DECLARE_EVENT_CALLBACK(ITE_SERVICE_REQUEST,      int (*cb)(int, const char *, int, const char *, int, void *))
 DECLARE_EVENT_CALLBACK(ITE_MEASUREPOINT_SET,     int (*cb)(const int, const char *, const int, void*))
 DECLARE_EVENT_CALLBACK(ITE_MEASUREPOINT_GET,     int (*cb)(const int, const char *, const int, char **, int *))
-DECLARE_EVENT_CALLBACK(ITE_REPORT_REPLY,         int (*cb)(const int, const int, const int, const char *, const int, const char *, const int))
-DECLARE_EVENT_CALLBACK(ITE_THING_REPLY,  int (*cb)(const int, const int, const int, const char *, const int,
-                       const char *, const int))
-DECLARE_EVENT_CALLBACK(ITE_TIMESTAMP_REPLY,      int (*cb)(const char *))
-DECLARE_EVENT_CALLBACK(ITE_TOPOLIST_REPLY,       int (*cb)(const int, const int, const int, const char *, const int))
-DECLARE_EVENT_CALLBACK(ITE_PERMIT_JOIN,          int (*cb)(const char *, const int))
+/* DECLARE_EVENT_CALLBACK(ITE_REPORT_REPLY,         int (*cb)(const int, const int, const int, const char *, const int, const char *, const int)) */
+DECLARE_EVENT_CALLBACK(ITE_THING_REPLY,          int (*cb)(const int, const int, const int, const char *, const int, const char *, const int))
+/*DECLARE_EVENT_CALLBACK(ITE_TIMESTAMP_REPLY,      int (*cb)(const char *))*/
+DECLARE_EVENT_CALLBACK(ITE_TOPO_GET_REPLY,       int (*cb)(const int, const int, const int, const char *, const int))
+DECLARE_EVENT_CALLBACK(ITE_DEVICE_REGISTER_REPLY,int (*cb)(const int, const int, const int))
+DECLARE_EVENT_CALLBACK(ITE_COMBINE_DISABLE,      int (*cb)(const int))
+DECLARE_EVENT_CALLBACK(ITE_COMBINE_ENABLE,       int (*cb)(const int))
+DECLARE_EVENT_CALLBACK(ITE_COMBINE_DELETE,       int (*cb)(const int, const char*, const int, const char*, const int))
+/*DECLARE_EVENT_CALLBACK(ITE_PERMIT_JOIN,          int (*cb)(const char *, const int))*/
 DECLARE_EVENT_CALLBACK(ITE_INITIALIZE_COMPLETED, int (*cb)(const int))
 DECLARE_EVENT_CALLBACK(ITE_MQTT_CONNECT_SUCC,    int (*cb)(void))
 DECLARE_EVENT_CALLBACK(ITE_CLOUD_ERROR,          int (*cb)(const int, const char *, const char *))
@@ -150,7 +160,7 @@ typedef enum {
     IOTX_IOCTL_SET_OTA_DEV_ID,          /* value(int*):     select the device to do OTA according to devid */
     IOTX_IOCTL_SET_CUSTOMIZE_INFO,      /* value(char*): set mqtt clientID customize information */
     IOTX_IOCTL_SET_MQTT_PORT,           /* value(uint16_t *) modify mqtt server port number */
-    IOTX_IOCTL_SET_PROXY_REGISTER,      /* value(int*): 0 - Disable proxy product register, 1 - Enable proxy product register */
+    
     IOTX_IOCTL_QUERY_DEVID,             /* value(iotx_dev_meta_info_t*): device meta info, only productKey and deviceKey is required, ret value is subdev_id or -1 */
     IOTX_IOCTL_SUB_USER_TOPIC,          /* subscribe a topic according to user topic and callback */
     IOTX_IOCTL_SET_PRODUCT_KEY,         /* vale(char *) - set product key */
@@ -213,5 +223,9 @@ typedef struct _network_addr_t {
     addr[NETWORK_ADDR_LEN];
     unsigned short  port;
 } NetworkAddr;
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif  /* _INFRA_COMPAT_H_ */

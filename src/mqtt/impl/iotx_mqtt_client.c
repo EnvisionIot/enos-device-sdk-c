@@ -1138,7 +1138,7 @@ static char iotx_mc_is_topic_matched(char *topicFilter, MQTTString *topicName)
     return (curn == curn_end) && (*curf == '\0');
 }
 
-/* /ext/auth/identity/response, payload: {"productKey":"","deviceName":""} */
+/* /ext/auth/identity/response, payload: {"productKey":"","deviceKey":""} */
 static void iotx_mc_parse_identity_response(iotx_mqtt_topic_info_pt topic_msg)
 {
     char *identify_topic = "/ext/auth/identity/response";
@@ -1168,7 +1168,7 @@ static void iotx_mc_parse_identity_response(iotx_mqtt_topic_info_pt topic_msg)
             char *product_key = NULL, *device_key = NULL, *str_product_key = NULL, *str_device_name = NULL;
             uint32_t product_key_len = 0, device_name_len = 0;
             if (infra_json_value(topic_msg->payload, topic_msg->payload_len, "productKey", strlen("productKey"), &product_key, &product_key_len) != STATE_SUCCESS ||
-                infra_json_value(topic_msg->payload, topic_msg->payload_len, "deviceName", strlen("deviceName"), &device_key, &device_name_len) != STATE_SUCCESS) {
+                infra_json_value(topic_msg->payload, topic_msg->payload_len, "deviceKey", strlen("deviceKey"), &device_key, &device_name_len) != STATE_SUCCESS) {
                 return;
             }
 

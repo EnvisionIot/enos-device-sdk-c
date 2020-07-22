@@ -118,22 +118,18 @@ int dm_msg_thing_reply(_IN_ char *identifier, _IN_ int identifier_len,
 #endif
 
 #ifdef DEVICE_MODEL_GATEWAY
-    int dm_msg_topo_add_notify(_IN_ char *payload, _IN_ int payload_len);
-    int dm_msg_thing_disable(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
-    _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
-    int dm_msg_thing_enable(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
-    _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
-    int dm_msg_thing_delete(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
-    _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
-    int dm_msg_thing_gateway_permit(_IN_ char *payload, _IN_ int payload_len);
-    int dm_msg_thing_sub_register_reply(dm_msg_response_payload_t *response);
-    int dm_msg_thing_proxy_product_register_reply(dm_msg_response_payload_t *response);
-    int dm_msg_thing_sub_unregister_reply(dm_msg_response_payload_t *response);
+    int dm_msg_thing_disable(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1], _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
+    int dm_msg_thing_enable(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1], _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
+    int dm_msg_thing_delete(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1], _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
+    int dm_msg_combine_disable(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1], _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
+    int dm_msg_combine_enable(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1], _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
+    int dm_msg_combine_delete(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1], _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1]);
+    int dm_msg_thing_device_register_reply(dm_msg_response_payload_t *response);
     int dm_msg_thing_topo_add_reply(dm_msg_response_payload_t *response);
     int dm_msg_thing_topo_delete_reply(dm_msg_response_payload_t *response);
     int dm_msg_topo_get_reply(dm_msg_response_payload_t *response);
-    int dm_msg_thing_list_found_reply(dm_msg_response_payload_t *response);
     int dm_msg_combine_login_reply(dm_msg_response_payload_t *response);
+    int dm_msg_combine_login_batch_reply(dm_msg_response_payload_t *response);
     int dm_msg_combine_logout_reply(dm_msg_response_payload_t *response);
 #endif
 int dm_msg_cloud_connected(void);
@@ -152,15 +148,15 @@ int dm_msg_cloud_reconnect(void);
 int dm_msg_register_result(_IN_ char *uri, _IN_ int result);
 
 #ifdef DEVICE_MODEL_GATEWAY
-int dm_msg_thing_sub_register(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
+typedef struct {
+    char product_key[IOTX_PRODUCT_KEY_LEN + 1];
+    char device_key[IOTX_DEVICE_KEY_LEN + 1];
+    char device_secret[IOTX_DEVICE_SECRET_LEN + 1];
+} dm_msg_device_credential_t;
+
+int dm_msg_thing_device_register(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                               _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                               _OU_ dm_msg_request_t *request);
-int dm_msg_thing_proxy_product_register(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
-                                        _IN_ char product_secret[IOTX_PRODUCT_SECRET_LEN + 1],
-                                        _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1], _OU_ dm_msg_request_t *request);
-int dm_msg_thing_sub_unregister(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
-                                _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
-                                _OU_ dm_msg_request_t *request);
 int dm_msg_thing_topo_add(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                           _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                           _IN_ char device_secret[IOTX_DEVICE_SECRET_LEN + 1], _OU_ dm_msg_request_t *request);
@@ -168,12 +164,12 @@ int dm_msg_thing_topo_delete(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                              _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                              _OU_ dm_msg_request_t *request);
 int dm_msg_thing_topo_get(_OU_ dm_msg_request_t *request);
-int dm_msg_thing_list_found(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
-                            _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
-                            _OU_ dm_msg_request_t *request);
 int dm_msg_combine_login(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                          _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                          _IN_ char device_secret[IOTX_DEVICE_SECRET_LEN + 1], _OU_ dm_msg_request_t *request);
+                         
+int dm_msg_combine_login_batch(_IN_ dm_msg_device_credential_t *device_credentials, int device_credentials_len, _OU_ dm_msg_request_t *request);
+
 int dm_msg_combine_logout(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                           _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                           _OU_ dm_msg_request_t *request);

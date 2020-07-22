@@ -149,19 +149,14 @@ IOT_EnOS_Close(g_user_example_ctx.master_devid);
 
 == Sample Codes
 
-* link:src/dev_model/examples/enos_example_solo.c[Establishing
-Connection with EnOS Cloud]
+* link:src/dev_model/examples/enos_example_solo.c[Establishing Connection with EnOS Cloud]
 * link:src/dev_model/examples/enos_example_device_tag.c[Device Tags]
-* link:src/dev_model/examples/enos_example_device_attribute.c[Device
-Attributes]
-* link:src/dev_model/examples/enos_example_device_measurepoint.c[Reporting
-Measurement Points]
-* link:src/dev_model/examples/enos_example_device_event.c[Reporting
-Events]
-* link:src/dev_model/examples/enos_example_command.c[Receiving Commands
-from Cloud]
-* link:src/dev_model/examples/enos_example_raw.c[Passing Through Device
-Information or Receiving Passed-through Information from Cloud]
+* link:src/dev_model/examples/enos_example_device_attribute.c[Device Attributes]
+* link:src/dev_model/examples/enos_example_device_measurepoint.c[Reporting Measurement Points]
+* link:src/dev_model/examples/enos_example_device_event.c[Reporting Events]
+* link:src/dev_model/examples/enos_example_command.c[Receiving Commands from Cloud]
+* link:src/dev_model/examples/enos_example_raw.c[Passing Through Device Information or Receiving Passed-through Information from Cloud]
+* link:src/dev_model/examples/enos_example_gateway_auto.c[Managing Sub-devices]
 
 == Related Information
 
@@ -177,5 +172,5 @@ Under development
 
 == Release Notes
 
-* 2020/01/08(Initial Release): Support direct connection to EnOS Cloud,
-bi-directional authentication and dynamic activation.
+* 2020/01/08(0.1.0): Support direct connection to EnOS Cloud, bi-directional authentication and dynamic activation.
+* 2020/07/22(0.1.1): Support sub-devices management.
