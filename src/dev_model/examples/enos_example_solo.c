@@ -43,10 +43,10 @@ typedef struct
 } user_example_ctx_t;
 
 /* direct login */
-char g_product_key[IOTX_PRODUCT_KEY_LEN + 1] = "TXepVmTh";
-char g_product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "bHGsUshy72T";
-char g_device_key[IOTX_DEVICE_KEY_LEN + 1] = "M1Ia3PPDim";
-char g_device_secret[IOTX_DEVICE_SECRET_LEN + 1] = "t9cLPzFvQc8bPECCSkZ3";
+char g_product_key[IOTX_PRODUCT_KEY_LEN + 1] = "product_key";
+char g_product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "product_secret";
+char g_device_key[IOTX_DEVICE_KEY_LEN + 1] = "device_key";
+char g_device_secret[IOTX_DEVICE_SECRET_LEN + 1] = "device_secret";
 
 /* dynamic active */
 /*
@@ -85,10 +85,10 @@ static int user_initialized(const int devid)
     return 0;
 }
 
-const char* device_secret = NULL;
-static int dynamic_activate_device_secret(const char* ds)
+const char *device_secret = NULL;
+static int dynamic_activate_device_secret(const char *ds)
 {
-    if(ds != NULL && strlen(ds) > 0)
+    if (ds != NULL && strlen(ds) > 0)
     {
         EXAMPLE_TRACE("******ds: %s******\n", ds);
         device_secret = ds;
@@ -101,7 +101,6 @@ static int dynamic_activate_device_secret(const char* ds)
     }
 }
 
-
 void user_sample_post_measurepoint(void);
 void user_sample_post_measurepoint_batch(void);
 
@@ -110,8 +109,7 @@ void user_sample_trigger_event(void);
 int user_measurepoint_set_event_handler(const int devid, const char *request, const int request_len,
                                         void *p_measurepoint_set_ctx);
 int user_service_invoke_event_handler(int devid, const char *serviceid, int serviceid_len,
-                                       const char *request, int request_len, void *p_service_ctx);
-
+                                      const char *request, int request_len, void *p_service_ctx);
 
 /** recv enos reply message from cloud **/
 static int user_thing_reply_event_handler(const int devid, const int msgid, const int code,
@@ -148,7 +146,6 @@ static int do_user_sample(void (*sample)(void), int count, int frequency)
     }
     return 0;
 }
-
 
 static void do_user_sample_measurepoint()
 {
@@ -203,7 +200,7 @@ int main(int argc, char **argv)
 
     do_user_sample_command();
 
-    char mqtt_uri[50] = "beta-iot-as-mqtt-cn4.eniot.io";
+    char mqtt_uri[50] = "mqtt_domain_url";
     IOT_Ioctl(IOTX_IOCTL_SET_MQTT_DOMAIN, (void *)mqtt_uri);
 
     int mqtt_port = 11883;
@@ -341,19 +338,20 @@ void user_sample_delete_tag(void)
 /**
  * attribute sample
  */
-void user_sample_query_attribute(void) {
+void user_sample_query_attribute(void)
+{
     int res = 0;
 
     char attribute_payload[50] = {0};
     HAL_Snprintf(attribute_payload, sizeof(attribute_payload), "{\"attributes\":[\"1.0\"]}");
 
-    res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_QUERY_ATTRIBUTE, (unsigned char*)attribute_payload, strlen(attribute_payload));
+    res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_QUERY_ATTRIBUTE, (unsigned char *)attribute_payload, strlen(attribute_payload));
 
     EXAMPLE_TRACE("Query Attribute Message ID: %d, payload: %s", res, attribute_payload);
 }
 
-
-void user_sample_update_attribute(void) {
+void user_sample_update_attribute(void)
+{
     static int cnt = 1;
     int res = 0;
     char attribute_payload[50] = {5};
@@ -363,13 +361,13 @@ void user_sample_update_attribute(void) {
     EXAMPLE_TRACE("Update Attribute Message ID: %d, payload: %s", res, attribute_payload);
 }
 
-
-void user_sample_delete_attribute(void) {
+void user_sample_delete_attribute(void)
+{
     int res = 0;
     char attribute_payload[50] = {0};
     HAL_Snprintf(attribute_payload, sizeof(attribute_payload), "{\"attributes\":[\"Shanghai\"]}");
 
-    res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_DELETE_ATTRIBUTE, (unsigned char*)attribute_payload, strlen(attribute_payload));
+    res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_DELETE_ATTRIBUTE, (unsigned char *)attribute_payload, strlen(attribute_payload));
 
     EXAMPLE_TRACE("Delete Attribute Message ID: %d, payload: %s", res, attribute_payload);
     EXAMPLE_TRACE("Delete Attribute Message ID: %d", res);
@@ -385,7 +383,7 @@ void user_sample_trigger_event(void)
     char *event_payload = "{\"events\": {\"Error\": 0} }";
 
     res = IOT_EnOS_TriggerEvent(EXAMPLE_MASTER_DEVID, event_id, strlen(event_id),
-                                   event_payload, strlen(event_payload));
+                                event_payload, strlen(event_payload));
     EXAMPLE_TRACE("Post Event Message ID: %d", res);
 }
 
@@ -415,18 +413,16 @@ void user_sample_post_measurepoint_batch(void)
 
     root = cJSON_CreateArray();
 
+    cJSON *item = cJSON_CreateObject();
 
-        cJSON *item = cJSON_CreateObject();
+    cJSON *measurepoint = cJSON_CreateObject();
+    cJSON_AddNumberToObject(measurepoint, "mp1", ++cnt);
+    cJSON_AddNumberToObject(measurepoint, "mp2", cnt);
+    cJSON_AddItemToObject(item, "measurepoints", measurepoint);
 
-        cJSON *measurepoint = cJSON_CreateObject();
-        cJSON_AddNumberToObject(measurepoint, "mp1", ++cnt);
-        cJSON_AddNumberToObject(measurepoint, "mp2", cnt);
-        cJSON_AddItemToObject(item, "measurepoints", measurepoint);
+    cJSON_AddNumberToObject(item, "time", HAL_UptimeMs() * 1000 + i * 500);
 
-        cJSON_AddNumberToObject(item, "time", HAL_UptimeMs() * 1000 + i * 500);
-
-        cJSON_AddItemReferenceToArray(root, item);
-
+    cJSON_AddItemReferenceToArray(root, item);
 
     char *out = cJSON_Print(root);
 
@@ -454,8 +450,10 @@ void user_sample_resume_measurepoint(void)
     char measurepoint_payload[50] = {0};
     HAL_Snprintf(measurepoint_payload, sizeof(measurepoint_payload), "{\"measurepoints\":{\"mp1\":%d}}", cnt++);
 
+#ifdef DEVICE_MEASUREPOINT_RESUME
     res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_RESUME_MEASUREPOINT,
                           (unsigned char *)measurepoint_payload, strlen(measurepoint_payload));
+#endif
 
     EXAMPLE_TRACE("Post Measurepoint Message ID: %d, payload: %s", res, measurepoint_payload);
 }
@@ -471,16 +469,16 @@ void user_sample_resume_measurepoint_batch(void)
 
     // for (i = 0; i < 2; i++)
     // {
-        cJSON *item = cJSON_CreateObject();
+    cJSON *item = cJSON_CreateObject();
 
-        cJSON *measurepoint = cJSON_CreateObject();
-        cJSON_AddNumberToObject(measurepoint, "mp1", cnt);
-        cJSON_AddNumberToObject(measurepoint, "mp2", cnt);
-        cJSON_AddItemToObject(item, "measurepoints", measurepoint);
+    cJSON *measurepoint = cJSON_CreateObject();
+    cJSON_AddNumberToObject(measurepoint, "mp1", cnt);
+    cJSON_AddNumberToObject(measurepoint, "mp2", cnt);
+    cJSON_AddItemToObject(item, "measurepoints", measurepoint);
 
-        cJSON_AddNumberToObject(item, "time", HAL_UptimeMs() * 1000 + i * 500);
+    cJSON_AddNumberToObject(item, "time", HAL_UptimeMs() * 1000 + i * 500);
 
-        cJSON_AddItemReferenceToArray(root, item);
+    cJSON_AddItemReferenceToArray(root, item);
     // }
 
     char *out = cJSON_Print(root);
@@ -492,8 +490,10 @@ void user_sample_resume_measurepoint_batch(void)
 
     cJSON_Delete(root);
 
+#ifdef DEVICE_MEASUREPOINT_RESUME
     res = IOT_EnOS_Report(EXAMPLE_MASTER_DEVID, ITM_MSG_RESUME_MEASUREPOINT_BATCH,
                           (unsigned char *)measurepoint_payload, strlen(measurepoint_payload));
+#endif
 
     EXAMPLE_TRACE("Post Measurepoint Message ID: %d, payload: %s", res, measurepoint_payload);
 }
@@ -503,21 +503,20 @@ void user_sample_resume_measurepoint_batch(void)
  */
 /** recv measurepoint setting message from cloud **/
 int user_measurepoint_set_event_handler(const int devid, const char *request, const int request_len,
-           void* p_measurepoint_set_ctx)
+                                        void *p_measurepoint_set_ctx)
 {
     int res = 0;
     EXAMPLE_TRACE("Measurepoint Set Received, Request: %s", request);
 
     res = IOT_EnOS_CommandReply(EXAMPLE_MASTER_DEVID, IOTX_COMMAND_MEASUREPOINT_SET,
-            NULL, 0, "{}", 2, p_measurepoint_set_ctx);
+                                NULL, 0, "{}", 2, p_measurepoint_set_ctx);
     EXAMPLE_TRACE("Set Measurepoint Message ID: %d", res);
 
     return 0;
 }
 
-
 int user_service_invoke_event_handler(int devid, const char *serviceid, int serviceid_len,
-                                                  const char *request, int request_len, void *p_service_ctx)
+                                      const char *request, int request_len, void *p_service_ctx)
 {
     int add_result = 0;
     cJSON *root = NULL, *item_number_a = NULL, *item_number_b = NULL;
@@ -529,15 +528,18 @@ int user_service_invoke_event_handler(int devid, const char *serviceid, int serv
 
     /* Parse Root */
     root = cJSON_Parse(request);
-    if (root == NULL || !cJSON_IsObject(root)) {
+    if (root == NULL || !cJSON_IsObject(root))
+    {
         EXAMPLE_TRACE("JSON Parse Error");
         return -1;
     }
 
-    if (strlen("Operation_Service") == serviceid_len && memcmp("Operation_Service", serviceid, serviceid_len) == 0) {
+    if (strlen("Operation_Service") == serviceid_len && memcmp("Operation_Service", serviceid, serviceid_len) == 0)
+    {
         /* Parse NumberA */
         item_number_a = cJSON_GetObjectItem(root, "NumberA");
-        if (item_number_a == NULL || !cJSON_IsNumber(item_number_a)) {
+        if (item_number_a == NULL || !cJSON_IsNumber(item_number_a))
+        {
             cJSON_Delete(root);
             return -1;
         }
@@ -545,7 +547,8 @@ int user_service_invoke_event_handler(int devid, const char *serviceid, int serv
 
         /* Parse NumberB */
         item_number_b = cJSON_GetObjectItem(root, "NumberB");
-        if (item_number_b == NULL || !cJSON_IsNumber(item_number_b)) {
+        if (item_number_b == NULL || !cJSON_IsNumber(item_number_b))
+        {
             cJSON_Delete(root);
             return -1;
         }
@@ -557,7 +560,7 @@ int user_service_invoke_event_handler(int devid, const char *serviceid, int serv
         HAL_Snprintf(response, sizeof(response), response_fmt, add_result);
         response_len = strlen(response);
         IOT_EnOS_CommandReply(devid, IOTX_COMMAND_SERVICE_INVOKE,
-                (char *)serviceid, serviceid_len, response, response_len, p_service_ctx);
+                              (char *)serviceid, serviceid_len, response, response_len, p_service_ctx);
     }
 
     cJSON_Delete(root);

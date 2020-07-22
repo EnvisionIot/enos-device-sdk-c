@@ -3,6 +3,10 @@
 
 #include "infra_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int8_t infra_hex2char(uint8_t hex);
 void infra_hex2str(uint8_t *input, uint16_t input_len, char *output);
 void infra_int2str(uint32_t input, char output[10]);
@@ -14,5 +18,10 @@ int32_t utils_str2uint(char *input, uint8_t input_len, uint32_t *output);
 void LITE_hexbuf_convert(unsigned char *digest, char *out, int in_len, int uppercase);
 int32_t infra_json_value(const char *input, uint32_t input_len, const char *key, uint32_t key_len, char **value, uint32_t *value_len);
 void infra_str_replace(char *origin, int len, char src, char dst, char **target);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 

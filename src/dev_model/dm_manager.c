@@ -53,7 +53,7 @@ static int _dm_mgr_search_dev_by_devid(_IN_ int devid, _OU_ dm_mgr_dev_node_t **
     return STATE_DEV_MODEL_DEVICE_NOT_FOUND;
 }
 
-static int _dm_mgr_search_dev_by_pkdn(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
+static int _dm_mgr_search_dev_by_pkdk(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                                       _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1], _OU_ dm_mgr_dev_node_t **node)
 {
     dm_mgr_ctx *ctx = _dm_mgr_get_ctx();
@@ -186,7 +186,7 @@ int dm_mgr_device_query(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
 
     /* duplicated parameters check is removed */
 
-    res = _dm_mgr_search_dev_by_pkdn(product_key, device_key, &node);
+    res = _dm_mgr_search_dev_by_pkdk(product_key, device_key, &node);
     if (res == SUCCESS_RETURN) {
         if (devid) {
             *devid = node->devid;
@@ -216,7 +216,7 @@ int dm_mgr_device_create(_IN_ int dev_type, _IN_ char product_key[IOTX_PRODUCT_K
         return STATE_USER_INPUT_INVALID;
     }
 
-    res = _dm_mgr_search_dev_by_pkdn(product_key, device_key, &node);
+    res = _dm_mgr_search_dev_by_pkdk(product_key, device_key, &node);
     if (res == SUCCESS_RETURN) {
         if (devid) {
             *devid = node->devid;
@@ -233,7 +233,9 @@ int dm_mgr_device_create(_IN_ int dev_type, _IN_ char product_key[IOTX_PRODUCT_K
     node->devid = _dm_mgr_next_devid();
     node->dev_type = dev_type;
     memcpy(node->product_key, product_key, strlen(product_key));
-    memcpy(node->product_secret, product_secret, strlen(product_secret));
+    if (product_secret != NULL) {
+        memcpy(node->product_secret, product_secret, strlen(product_secret));
+    }
     memcpy(node->device_key, device_key, strlen(device_key));
     if (device_secret != NULL) {
         memcpy(node->device_secret, device_secret, strlen(device_secret));
@@ -359,7 +361,7 @@ int dm_mgr_search_device_by_devid(_IN_ int devid, _OU_ char product_key[IOTX_PRO
     return SUCCESS_RETURN;
 }
 
-int dm_mgr_search_device_by_pkdn(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
+int dm_mgr_search_device_by_pkdk(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                                  _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                                  _OU_ int *devid)
 {
@@ -370,7 +372,7 @@ int dm_mgr_search_device_by_pkdn(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1]
         return STATE_USER_INPUT_INVALID;
     }
 
-    res = _dm_mgr_search_dev_by_pkdn(product_key, device_key, &node);
+    res = _dm_mgr_search_dev_by_pkdk(product_key, device_key, &node);
     if (res != SUCCESS_RETURN) {
         return res;
     }
@@ -469,7 +471,7 @@ int dm_mgr_get_dev_avail(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
         return STATE_USER_INPUT_INVALID;
     }
 
-    res = _dm_mgr_search_dev_by_pkdn(product_key, device_key, &node);
+    res = _dm_mgr_search_dev_by_pkdk(product_key, device_key, &node);
     if (res != SUCCESS_RETURN) {
         return res;
     }
@@ -562,7 +564,7 @@ int dm_mgr_dev_initialized(int devid)
 }
 
 #ifdef DEVICE_MODEL_GATEWAY
-int dm_mgr_upstream_thing_sub_register(_IN_ int devid)
+int dm_mgr_upstream_thing_device_register(_IN_ int devid)
 {
     int res = 0;
     dm_mgr_dev_node_t *node = NULL;
@@ -578,13 +580,13 @@ int dm_mgr_upstream_thing_sub_register(_IN_ int devid)
     }
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_SUB_REGISTER;
+    request.service_prefix = DM_URI_SYS_PREFIX;
+    request.service_name = DM_URI_THING_DEVICE_REGISTER;
     IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
     IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
 
     /* Get Params And Method */
-    res = dm_msg_thing_sub_register(node->product_key, node->device_key, &request);
+    res = dm_msg_thing_device_register(node->product_key, node->device_key, &request);
     if (res != SUCCESS_RETURN) {
         return res;
     }
@@ -596,7 +598,7 @@ int dm_mgr_upstream_thing_sub_register(_IN_ int devid)
     request.devid = devid;
 
     /* Callback */
-    request.callback = dm_client_thing_sub_register_reply;
+    request.callback = dm_client_thing_device_register_reply;
 #if !defined(DM_MESSAGE_CACHE_DISABLED)
     dm_msg_cache_insert(request.msgid, request.devid, IOTX_DM_EVENT_SUBDEV_REGISTER_REPLY, NULL);
 #endif
@@ -614,109 +616,6 @@ int dm_mgr_upstream_thing_sub_register(_IN_ int devid)
     return res;
 }
 
-int dm_mgr_upstream_thing_proxy_product_register(_IN_ int devid)
-{
-    int res = 0;
-    dm_mgr_dev_node_t *node = NULL;
-    dm_msg_request_t request;
-
-    if (devid < 0) {
-        return STATE_USER_INPUT_INVALID;
-    }
-
-    res = _dm_mgr_search_dev_by_devid(devid, &node);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_PROXY_PRODUCT_REGISTER;
-    IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
-    IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
-
-    /* Get Params And Method */
-    res = dm_msg_thing_proxy_product_register(node->product_key, node->product_secret, node->device_key, &request);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    /* Get Msg ID */
-    request.msgid = iotx_report_id();
-
-    /* Get Dev ID */
-    request.devid = devid;
-
-    /* Callback */
-    request.callback = dm_client_thing_proxy_product_register_reply;
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    dm_msg_cache_insert(request.msgid, request.devid, IOTX_DM_EVENT_SUBDEV_REGISTER_REPLY, NULL);
-#endif
-    /* Send Message To Cloud */
-    res = dm_msg_request(DM_MSG_DEST_CLOUD, &request);
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    if (res != SUCCESS_RETURN) {
-        dm_msg_cache_remove(request.msgid);
-    } else {
-        res = request.msgid;
-    }
-#endif
-    DM_free(request.params);
-
-    return res;
-}
-
-int dm_mgr_upstream_thing_sub_unregister(_IN_ int devid)
-{
-    int res = 0;
-    dm_mgr_dev_node_t *node = NULL;
-    dm_msg_request_t request;
-
-    if (devid < 0) {
-        return STATE_USER_INPUT_INVALID;
-    }
-
-    res = _dm_mgr_search_dev_by_devid(devid, &node);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_SUB_UNREGISTER;
-    IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
-    IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
-
-    /* Get Params And Method */
-    res = dm_msg_thing_sub_unregister(node->product_key, node->device_key, &request);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    /* Get Msg ID */
-    request.msgid = iotx_report_id();
-
-    /* Get Dev ID */
-    request.devid = devid;
-
-    /* Callback */
-    request.callback = dm_client_thing_sub_unregister_reply;
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    dm_msg_cache_insert(request.msgid, request.devid, IOTX_DM_EVENT_SUBDEV_UNREGISTER_REPLY, NULL);
-#endif
-    /* Send Message To Cloud */
-    res = dm_msg_request(DM_MSG_DEST_CLOUD, &request);
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    if (res != SUCCESS_RETURN) {
-        dm_msg_cache_remove(request.msgid);
-    } else {
-        res = request.msgid;
-    }
-#endif
-    DM_free(request.params);
-
-    return res;
-}
 
 int dm_mgr_upstream_thing_topo_add(_IN_ int devid)
 {
@@ -734,8 +633,8 @@ int dm_mgr_upstream_thing_topo_add(_IN_ int devid)
     }
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_TOPO_ADD;
+    request.service_prefix = DM_URI_SYS_PREFIX;
+    request.service_name = DM_URI_THING_TOPO_ADD;
     IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
     IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
 
@@ -786,8 +685,8 @@ int dm_mgr_upstream_thing_topo_delete(_IN_ int devid)
     }
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_TOPO_DELETE;
+    request.service_prefix = DM_URI_SYS_PREFIX;
+    request.service_name = DM_URI_THING_TOPO_DELETE;
     IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
     IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
 
@@ -829,12 +728,12 @@ int dm_mgr_upstream_thing_topo_get(void)
     dm_msg_request_t request;
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_TOPO_GET;
+    request.service_prefix = DM_URI_SYS_PREFIX;
+    request.service_name = DM_URI_THING_TOPO_GET;
     IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
     IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
 
-    res = _dm_mgr_search_dev_by_pkdn(request.product_key, request.device_key, &node);
+    res = _dm_mgr_search_dev_by_pkdk(request.product_key, request.device_key, &node);
     if (res != SUCCESS_RETURN) {
         return res;
     }
@@ -870,58 +769,6 @@ int dm_mgr_upstream_thing_topo_get(void)
     return res;
 }
 
-int dm_mgr_upstream_thing_list_found(_IN_ int devid)
-{
-    int res = 0;
-    dm_mgr_dev_node_t *node = NULL;
-    dm_msg_request_t request;
-
-    if (devid < 0) {
-        return STATE_USER_INPUT_INVALID;
-    }
-
-    res = _dm_mgr_search_dev_by_devid(devid, &node);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_SYS_PREFIX;
-    request.reply_name = DM_URI_THING_LIST_FOUND;
-    IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
-    IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
-
-    /* Get Params And Method */
-    res = dm_msg_thing_list_found(node->product_key, node->device_key, &request);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    /* Get Msg ID */
-    request.msgid = iotx_report_id();
-
-    /* Get Dev ID */
-    request.devid = devid;
-
-    /* Callback */
-    request.callback = dm_client_thing_list_found_reply;
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    dm_msg_cache_insert(request.msgid, request.devid, IOTX_DM_EVENT_TOPO_ADD_NOTIFY_REPLY, NULL);
-#endif
-    /* Send Message To Cloud */
-    res = dm_msg_request(DM_MSG_DEST_CLOUD, &request);
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    if (res != SUCCESS_RETURN) {
-        dm_msg_cache_remove(request.msgid);
-    } else {
-        res = request.msgid;
-    }
-#endif
-    DM_free(request.params);
-
-    return res;
-}
-
 int dm_mgr_upstream_combine_login(_IN_ int devid)
 {
     int res = 0;
@@ -938,8 +785,8 @@ int dm_mgr_upstream_combine_login(_IN_ int devid)
     }
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_EXT_SESSION_PREFIX;
-    request.reply_name = DM_URI_COMBINE_LOGIN;
+    request.service_prefix = DM_URI_EXT_SESSION_PREFIX;
+    request.service_name = DM_URI_COMBINE_LOGIN;
     IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
     IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
 
@@ -974,6 +821,76 @@ int dm_mgr_upstream_combine_login(_IN_ int devid)
     return res;
 }
 
+int dm_mgr_upstream_combine_login_batch(_IN_ int devid, _IN_ int* sub_devids, _IN_ int sub_devids_len)
+{
+    int res = 0;
+    dm_mgr_dev_node_t *node = NULL;
+    dm_msg_request_t request;
+
+    int device_credentials_len = sub_devids_len;
+    dm_msg_device_credential_t* device_credentials;
+    int index = 0;
+
+    if (devid < 0) {
+        return STATE_USER_INPUT_INVALID;
+    }
+
+    res = _dm_mgr_search_dev_by_devid(devid, &node);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+
+    memset(&request, 0, sizeof(dm_msg_request_t));
+    request.service_prefix = DM_URI_EXT_SESSION_PREFIX;
+    request.service_name = DM_URI_COMBINE_LOGIN_BATCH;
+    IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
+    IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
+
+    device_credentials = DM_malloc(sizeof(dm_msg_device_credential_t) * device_credentials_len);
+    for (index = 0; index < sub_devids_len; index ++)
+    {
+        res = _dm_mgr_search_dev_by_devid(sub_devids[index], &node);
+        if (res != SUCCESS_RETURN) {
+            return res;
+        }
+        memcpy(device_credentials[index].product_key, node->product_key, strlen(node->product_key));
+        memcpy(device_credentials[index].device_key, node->device_key, strlen(node->device_key));
+        memcpy(device_credentials[index].device_secret, node->device_secret, strlen(node->device_secret));
+    }
+
+    /* Get Params And Method */
+    res = dm_msg_combine_login_batch(device_credentials, device_credentials_len, &request);
+    if (res != SUCCESS_RETURN) {
+        DM_free(device_credentials);
+        return res;
+    }
+
+    /* Get Msg ID */
+    request.msgid = iotx_report_id();
+
+    /* Get Dev ID */
+    request.devid = devid;
+
+    /* Callback */
+    request.callback = dm_client_combine_login_batch_reply;
+#if !defined(DM_MESSAGE_CACHE_DISABLED)
+    dm_msg_cache_insert(request.msgid, request.devid, IOTX_DM_EVENT_COMBINE_LOGIN_BATCH_REPLY, NULL);
+#endif
+    /* Send Message To Cloud */
+    res = dm_msg_request(DM_MSG_DEST_CLOUD, &request);
+#if !defined(DM_MESSAGE_CACHE_DISABLED)
+    if (res != SUCCESS_RETURN) {
+        dm_msg_cache_remove(request.msgid);
+    } else {
+        res = request.msgid;
+    }
+#endif
+    DM_free(device_credentials);
+    DM_free(request.params);
+
+    return res;
+}
+
 int dm_mgr_upstream_combine_logout(_IN_ int devid)
 {
     int res = 0;
@@ -994,8 +911,8 @@ int dm_mgr_upstream_combine_logout(_IN_ int devid)
     }
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_EXT_SESSION_PREFIX;
-    request.reply_name = DM_URI_COMBINE_LOGOUT;
+    request.service_prefix = DM_URI_EXT_SESSION_PREFIX;
+    request.service_name = DM_URI_COMBINE_LOGOUT;
     IOT_Ioctl(IOTX_IOCTL_GET_PRODUCT_KEY, request.product_key);
     IOT_Ioctl(IOTX_IOCTL_GET_DEVICE_KEY, request.device_key);
 
@@ -1048,13 +965,13 @@ int dm_mgr_upstream_thing_firmware_version_update(_IN_ int devid, _IN_ char *pay
     }
 
     memset(&request, 0, sizeof(dm_msg_request_t));
-    request.reply_prefix = DM_URI_OTA_DEVICE_INFORM;
-    request.reply_name = NULL;
+    request.service_prefix = DM_URI_OTA_DEVICE_INFORM;
+    request.service_name = NULL;
     memcpy(request.product_key, node->product_key, strlen(node->product_key));
     memcpy(request.device_key, node->device_key, strlen(node->device_key));
 
     /* Request URI */
-    res = dm_utils_service_name(request.reply_prefix, request.reply_name,
+    res = dm_utils_service_name(request.service_prefix, request.service_name,
                                 request.product_key, request.device_key, &uri);
     if (res != SUCCESS_RETURN) {
         return res;

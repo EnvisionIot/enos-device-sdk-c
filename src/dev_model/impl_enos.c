@@ -35,6 +35,7 @@
 #define IOTX_ENOS_KEY_CTX         "ctx"
 #define IOTX_ENOS_KEY_TOPO        "topo"
 #define IOTX_ENOS_KEY_PRODUCT_KEY "productKey"
+#define IOTX_ENOS_KEY_DEVICE_KEY  "deviceKey"
 #define IOTX_ENOS_KEY_TIME        "time"
 #define IOTX_ENOS_KEY_DATA        "data"
 #define IOTX_ENOS_KEY_MESSAGE     "message"
@@ -100,6 +101,9 @@ static iotx_msg_type_method_map_t g_msg_type_method_map[] = {
 
     {ITM_MSG_POST_MEASUREPOINT, "thing.measurepoint.post"},
     {ITM_MSG_POST_MEASUREPOINT_BATCH, "thing.measurepoint.post.batch"},
+#ifdef DEVICE_MODEL_GATEWAY
+    {ITM_MSG_REGISTER, "thing.device.register"},
+#endif
 #endif
 };
 
@@ -392,7 +396,7 @@ static void _iotx_enos_event_callback(iotx_dm_event_types_t type, char *payload)
     void *callback;
     lite_cjson_t lite, lite_item_id, lite_item_devid, lite_item_serviceid, lite_item_payload, lite_item_ctx;
     lite_cjson_t lite_item_code, lite_item_eventid, lite_item_utc, lite_item_rrpcid, lite_item_topo;
-    lite_cjson_t lite_item_pk, lite_item_time;
+    lite_cjson_t lite_item_pk, lite_item_dk, lite_item_time;
     lite_cjson_t lite_item_version, lite_item_configid, lite_item_configsize, lite_item_gettype, lite_item_sign,
                  lite_item_signmethod, lite_item_url, lite_item_data, lite_item_message;
 
@@ -422,6 +426,8 @@ static void _iotx_enos_event_callback(iotx_dm_event_types_t type, char *payload)
                                   &lite_item_topo);
         dm_utils_json_object_item(&lite, IOTX_ENOS_KEY_PRODUCT_KEY, strlen(IOTX_ENOS_KEY_PRODUCT_KEY), cJSON_Invalid,
                                   &lite_item_pk);
+        dm_utils_json_object_item(&lite, IOTX_ENOS_KEY_DEVICE_KEY, strlen(IOTX_ENOS_KEY_DEVICE_KEY), cJSON_Invalid,
+                                  &lite_item_dk);
         dm_utils_json_object_item(&lite, IOTX_ENOS_KEY_TIME, strlen(IOTX_ENOS_KEY_TIME), cJSON_Invalid,
                                   &lite_item_time);
         dm_utils_json_object_item(&lite, IOTX_ENOS_KEY_VERSION, strlen(IOTX_ENOS_KEY_VERSION), cJSON_Invalid,
@@ -710,7 +716,7 @@ static void _iotx_enos_event_callback(iotx_dm_event_types_t type, char *payload)
             memset(topo_list, 0, lite_item_topo.value_length + 1);
             memcpy(topo_list, lite_item_topo.value, lite_item_topo.value_length);
 
-            callback = iotx_event_callback(ITE_TOPOLIST_REPLY);
+            callback = iotx_event_callback(ITE_TOPO_GET_REPLY);
             if (callback) {
                 ((int (*)(const int, const int, const int, const char *, const int))callback)(lite_item_devid.value_int,
                         lite_item_id.value_int,
@@ -720,10 +726,25 @@ static void _iotx_enos_event_callback(iotx_dm_event_types_t type, char *payload)
             IMPL_ENOS_FREE(topo_list);
         }
         break;
+        case IOTX_DM_EVENT_SUBDEV_REGISTER_REPLY: {
+            iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_ENOS_PROT_EVENT,
+                             "register reply, msgid = %d, devid = %d, code = %d, msg = %s",
+                             lite_item_id.value_int,
+                             lite_item_devid.value_int,
+                             lite_item_code.value_int,
+                             lite_item_message.value);
+            callback = iotx_event_callback(ITE_DEVICE_REGISTER_REPLY);
+            if (callback) {
+                ((int (*)(const int, const int, const int))callback)(lite_item_devid.value_int,
+                            lite_item_id.value_int, lite_item_code.value_int);
+            }
+            _iotx_enos_upstream_mutex_lock();
+            _iotx_enos_upstream_callback_remove(lite_item_id.value_int, lite_item_code.value_int);
+            _iotx_enos_upstream_mutex_unlock();
+        }
+        break;
         case IOTX_DM_EVENT_TOPO_DELETE_REPLY:
         case IOTX_DM_EVENT_TOPO_ADD_REPLY:
-        case IOTX_DM_EVENT_SUBDEV_REGISTER_REPLY:
-        case IOTX_DM_EVENT_PROXY_PRODUCT_REGISTER_REPLY:
         case IOTX_DM_EVENT_COMBINE_LOGIN_REPLY:
         case IOTX_DM_EVENT_COMBINE_LOGOUT_REPLY: {
             if (payload == NULL || lite_item_id.type != cJSON_Number || lite_item_devid.type != cJSON_Number ||
@@ -741,7 +762,49 @@ static void _iotx_enos_event_callback(iotx_dm_event_types_t type, char *payload)
             _iotx_enos_upstream_mutex_unlock();
         }
         break;
-        case IOTX_DM_EVENT_GATEWAY_PERMIT: {
+        case IOTX_DM_EVENT_COMBINE_DISABLE: {
+            if (payload == NULL || lite_item_devid.type != cJSON_Number) {
+                return;
+            }
+            iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_ENOS_PROT_EVENT,
+                             "disable device, devid = %d",
+                             lite_item_devid.value_int);
+            callback = iotx_event_callback(ITE_COMBINE_DISABLE);
+            if (callback) {
+                ((int (*)(const int))callback)(lite_item_devid.value_int);
+            }
+        }
+        break;
+        case IOTX_DM_EVENT_COMBINE_ENABLE: {
+            if (payload == NULL || lite_item_devid.type != cJSON_Number) {
+                return;
+            }
+            iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_ENOS_PROT_EVENT,
+                             "disable device, devid = %d",
+                             lite_item_devid.value_int);
+            callback = iotx_event_callback(ITE_COMBINE_ENABLE);
+            if (callback) {
+                ((int (*)(const int))callback)(lite_item_devid.value_int);
+            }
+
+        }
+        break;
+        case IOTX_DM_EVENT_COMBINE_DELETE: {
+            if (payload == NULL || lite_item_devid.type != cJSON_Number) {
+                return;
+            }
+            iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_ENOS_PROT_EVENT,
+                             "disable device, devid = %d, productKey = %s, deviceKey = %s\n",
+                             lite_item_devid.value_int, lite_item_pk.value, lite_item_dk.value);
+            callback = iotx_event_callback(ITE_COMBINE_DELETE);
+            if (callback) {
+                ((int (*)(const int, const char*, const int, const char*, const int))callback)(lite_item_devid.value_int,
+                 lite_item_pk.value, lite_item_pk.value_length, lite_item_dk.value, lite_item_dk.value_length);
+            }
+
+        }
+        break;
+/*        case IOTX_DM_EVENT_GATEWAY_PERMIT: {
             char *product_key = "";
 
             if (payload == NULL || lite_item_time.type != cJSON_Number) {
@@ -772,6 +835,7 @@ static void _iotx_enos_event_callback(iotx_dm_event_types_t type, char *payload)
             }
         }
         break;
+*/
 #endif
         default: {
         }
@@ -802,10 +866,10 @@ static int _iotx_enos_master_open(iotx_enos_dev_meta_info_t *meta_info)
     }
 
 #ifdef DEVICE_MODEL_GATEWAY
-    service_ctx->upstream_mutex = HAL_MutexCreate();
-    if (service_ctx->upstream_mutex == NULL) {
-        HAL_MutexDestroy(service_ctx->mutex);
-        service_ctx->is_opened = 0;
+    ctx->upstream_mutex = HAL_MutexCreate();
+    if (ctx->upstream_mutex == NULL) {
+        HAL_MutexDestroy(ctx->mutex);
+        ctx->is_opened = 0;
         return STATE_SYS_DEPEND_MUTEX_CREATE;
     }
 #endif
@@ -824,7 +888,7 @@ static int _iotx_enos_master_open(iotx_enos_dev_meta_info_t *meta_info)
     res = iotx_dm_open();
     if (res != SUCCESS_RETURN) {
 #ifdef DEVICE_MODEL_GATEWAY
-        HAL_MutexDestroy(service_ctx->upstream_mutex);
+        HAL_MutexDestroy(ctx->upstream_mutex);
 #endif
 #if !defined(DEVICE_MODEL_RAWDATA_SOLO)
         HAL_MutexDestroy(ctx->command_list_mutex);
@@ -911,18 +975,8 @@ static int _iotx_enos_slave_connect(int devid)
         return STATE_USER_INPUT_DEVID;
     }
 
-    res = iotx_dm_get_opt(DM_OPT_PROXY_PRODUCT_REGISTER, (void *)&proxy_product_register);
-    if (res < SUCCESS_RETURN) {
-        return res;
-    }
-
     /* Subdev Register */
-    if (proxy_product_register) {
-        res = iotx_dm_subdev_proxy_register(devid);
-        if (res < SUCCESS_RETURN) {
-            return res;
-        }
-    } else {
+    {
         res = iotx_dm_subdev_register(devid);
         if (res < SUCCESS_RETURN) {
             return res;
@@ -1008,6 +1062,63 @@ static int _iotx_enos_slave_connect(int devid)
     return SUCCESS_RETURN;
 }
 
+static int _iotx_enos_subdev_add_topo(int devid)
+{
+    int res = 0, msgid = 0, code = 0;
+    iotx_enos_ctx_t *service_ctx = _iotx_enos_get_ctx();
+    iotx_enos_upstream_sync_callback_node_t *node = NULL;
+    void *semaphore = NULL;
+
+    if (service_ctx->is_connected == 0) {
+        return STATE_DEV_MODEL_MASTER_NOT_CONNECT_YET;
+    }
+
+    if (devid <= 0) {
+        return STATE_USER_INPUT_DEVID;
+    }
+
+    /* Subdev Add Topo */
+    res = iotx_dm_subdev_topo_add(devid);
+    if (res < SUCCESS_RETURN) {
+        return res;
+    }
+    msgid = res;
+
+    semaphore = HAL_SemaphoreCreate();
+    if (semaphore == NULL) {
+        return STATE_SYS_DEPEND_SEMAPHORE_CREATE;
+    }
+
+    _iotx_enos_upstream_mutex_lock();
+    res = _iotx_enos_upstream_sync_callback_list_insert(msgid, semaphore, &node);
+    if (res != SUCCESS_RETURN) {
+        HAL_SemaphoreDestroy(semaphore);
+        _iotx_enos_upstream_mutex_unlock();
+        return res;
+    }
+    _iotx_enos_upstream_mutex_unlock();
+
+    res = HAL_SemaphoreWait(semaphore, IOTX_ENOS_SYNC_DEFAULT_TIMEOUT_MS);
+    if (res < SUCCESS_RETURN) {
+        _iotx_enos_upstream_mutex_lock();
+        _iotx_enos_upstream_sync_callback_list_remove(msgid);
+        _iotx_enos_upstream_mutex_unlock();
+        return STATE_SYS_DEPEND_SEMAPHORE_WAIT;
+    }
+
+    _iotx_enos_upstream_mutex_lock();
+    code = node->code;
+    _iotx_enos_upstream_sync_callback_list_remove(msgid);
+    if (code != SUCCESS_RETURN) {
+        _iotx_enos_upstream_mutex_unlock();
+        iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_REFUSED_BY_CLOUD, "refuse to del topo for devid: %d", devid);
+        return STATE_DEV_MODEL_REFUSED_BY_CLOUD;
+    }
+    _iotx_enos_upstream_mutex_unlock();
+
+    return SUCCESS_RETURN;
+}
+
 static int _iotx_enos_subdev_delete_topo(int devid)
 {
     int res = 0, msgid = 0, code = 0;
@@ -1084,7 +1195,7 @@ static int _iotx_enos_master_close(void)
     iotx_dm_close();
 #ifdef DEVICE_MODEL_GATEWAY
     _iotx_enos_upstream_sync_callback_list_destroy();
-    HAL_MutexDestroy(service_ctx->upstream_mutex);
+    HAL_MutexDestroy(ctx->upstream_mutex);
 #endif
     _iotx_enos_mutex_unlock();
     HAL_MutexDestroy(ctx->mutex);
@@ -1168,11 +1279,14 @@ int IOT_EnOS_Connect(int devid)
     if (devid == IOTX_DM_LOCAL_NODE_DEVID) {
         res = _iotx_enos_master_connect();
     } else {
+        res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
+/** not support auto register subdev and add topo to gateway
 #ifdef DEVICE_MODEL_GATEWAY
         res = _iotx_enos_slave_connect(devid);
 #else
         res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
 #endif
+*/
     }
     _iotx_enos_mutex_unlock();
 
@@ -1245,6 +1359,63 @@ static int _iotx_enos_subdev_login(int devid)
     void *callback = NULL;
 
     res = iotx_dm_subdev_login(devid);
+    if (res < SUCCESS_RETURN) {
+        return res;
+    }
+
+    msgid = res;
+    semaphore = HAL_SemaphoreCreate();
+    if (semaphore == NULL) {
+        return STATE_SYS_DEPEND_SEMAPHORE_CREATE;
+    }
+
+    _iotx_enos_upstream_mutex_lock();
+    res = _iotx_enos_upstream_sync_callback_list_insert(msgid, semaphore, &node);
+    if (res != SUCCESS_RETURN) {
+        HAL_SemaphoreDestroy(semaphore);
+        _iotx_enos_upstream_mutex_unlock();
+        return res;
+    }
+    _iotx_enos_upstream_mutex_unlock();
+
+    res = HAL_SemaphoreWait(semaphore, IOTX_ENOS_SYNC_DEFAULT_TIMEOUT_MS);
+    if (res < SUCCESS_RETURN) {
+        _iotx_enos_upstream_mutex_lock();
+        _iotx_enos_upstream_sync_callback_list_remove(msgid);
+        _iotx_enos_upstream_mutex_unlock();
+        return res;
+    }
+
+    _iotx_enos_upstream_mutex_lock();
+    code = node->code;
+    _iotx_enos_upstream_sync_callback_list_remove(msgid);
+    if (code != SUCCESS_RETURN) {
+        _iotx_enos_upstream_mutex_unlock();
+        iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_REFUSED_BY_CLOUD, "refuse to login for devid: %d", devid);
+        return STATE_DEV_MODEL_REFUSED_BY_CLOUD;
+    }
+    _iotx_enos_upstream_mutex_unlock();
+
+    res = iotx_dm_subscribe(devid);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+
+    callback = iotx_event_callback(ITE_INITIALIZE_COMPLETED);
+    if (callback) {
+        ((int (*)(const int))callback)(devid);
+    }
+
+    return SUCCESS_RETURN;
+}
+static int _iotx_enos_subdev_login_batch(int devid, int* sub_devids, int sub_devids_len)
+{
+    int res = 0, msgid = 0, code = 0;
+    iotx_enos_upstream_sync_callback_node_t *node = NULL;
+    void *semaphore = NULL;
+    void *callback = NULL;
+
+    res = iotx_dm_subdev_login_batch(devid, sub_devids, sub_devids_len);
     if (res < SUCCESS_RETURN) {
         return res;
     }
@@ -1373,7 +1544,11 @@ int IOT_EnOS_Report(int devid, iotx_enos_msg_type_t msg_type, unsigned char *pay
         case ITM_MSG_RESUME_MEASUREPOINT_BATCH:
 #endif
         case ITM_MSG_POST_MEASUREPOINT:
-        case ITM_MSG_POST_MEASUREPOINT_BATCH: {
+        case ITM_MSG_POST_MEASUREPOINT_BATCH: 
+#ifdef DEVICE_MODEL_GATEWAY
+        case ITM_MSG_REGISTER:
+#endif
+        {
             char *method = NULL;
             if (payload == NULL || payload_len <= 0) {
                 _iotx_enos_mutex_unlock();
@@ -1400,9 +1575,25 @@ int IOT_EnOS_Report(int devid, iotx_enos_msg_type_t msg_type, unsigned char *pay
 #endif
         }
         break;
+        case ITM_MSG_LOGIN_BATCH: {
+#ifdef DEVICE_MODEL_GATEWAY
+            res = _iotx_enos_subdev_login_batch(devid, (int*)payload, payload_len);
+#else
+            res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
+#endif
+        }
+        break;
         case ITM_MSG_LOGOUT: {
 #ifdef DEVICE_MODEL_GATEWAY
             res = _iotx_enos_subdev_logout(devid);
+#else
+            res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
+#endif
+        }
+        break;
+        case ITM_MSG_ADD_TOPO: {
+#ifdef DEVICE_MODEL_GATEWAY
+            res = _iotx_enos_subdev_add_topo(devid);
 #else
             res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
 #endif
@@ -1416,6 +1607,15 @@ int IOT_EnOS_Report(int devid, iotx_enos_msg_type_t msg_type, unsigned char *pay
 #endif
         }
         break;
+        case ITM_MSG_GET_TOPO: {
+#ifdef DEVICE_MODEL_GATEWAY
+            res = iotx_dm_topo_get();
+#else
+            res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
+#endif
+        }
+        break;
+/*
 #ifdef DEVICE_MODEL_GATEWAY
 #ifdef DEVICE_MODEL_SUBDEV_OTA
         case ITM_MSG_REPORT_SUBDEV_FIRMWARE_VERSION: {
@@ -1424,6 +1624,7 @@ int IOT_EnOS_Report(int devid, iotx_enos_msg_type_t msg_type, unsigned char *pay
         break;
 #endif
 #endif
+*/
 #ifdef DEVICE_MEASUREPOINT_RESUME
         case ITM_MSG_MEASUREPOINT_RESUME_DATA: {
             if (payload == NULL || payload_len <= 0) {
@@ -1458,9 +1659,9 @@ int IOT_EnOS_Query(int devid, iotx_enos_msg_type_t msg_type, unsigned char *payl
 
     _iotx_enos_mutex_lock();
     switch (msg_type) {
-        case ITM_MSG_QUERY_TOPOLIST: {
+        case ITM_MSG_GET_TOPO: {
 #ifdef DEVICE_MODEL_GATEWAY
-            res = iotx_dm_query_topo_list();
+            res = iotx_dm_topo_get();
 #else
             res = STATE_DEV_MODEL_GATEWAY_NOT_ENABLED;
 #endif

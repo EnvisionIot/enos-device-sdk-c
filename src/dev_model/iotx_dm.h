@@ -82,7 +82,11 @@ typedef enum {
     IOTX_DM_EVENT_TOPO_ADD_NOTIFY_REPLY,
     IOTX_DM_EVENT_THING_REPLY,
     IOTX_DM_EVENT_COMBINE_LOGIN_REPLY,
+    IOTX_DM_EVENT_COMBINE_LOGIN_BATCH_REPLY,
     IOTX_DM_EVENT_COMBINE_LOGOUT_REPLY,
+    IOTX_DM_EVENT_COMBINE_DISABLE,
+    IOTX_DM_EVENT_COMBINE_ENABLE,
+    IOTX_DM_EVENT_COMBINE_DELETE,
     IOTX_DM_EVENT_MODEL_UP_RAW_REPLY,
     IOTX_DM_EVENT_CLOUD_ERROR,
     IOTX_DM_EVENT_MAX
@@ -176,7 +180,7 @@ int iotx_dm_send_service_invoke_response(_IN_ int devid, _IN_ char *msgid, _IN_ 
 #endif
 
 #ifdef DEVICE_MODEL_GATEWAY
-int iotx_dm_query_topo_list(void);
+int iotx_dm_topo_get(void);
 int iotx_dm_subdev_query(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                          _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                          _OU_ int *devid);
@@ -187,11 +191,10 @@ int iotx_dm_subdev_create(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
 int iotx_dm_subdev_destroy(_IN_ int devid);
 int iotx_dm_subdev_number(void);
 int iotx_dm_subdev_register(_IN_ int devid);
-int iotx_dm_subdev_proxy_register(_IN_ int devid);
-int iotx_dm_subdev_unregister(_IN_ int devid);
 int iotx_dm_subdev_topo_add(_IN_ int devid);
 int iotx_dm_subdev_topo_del(_IN_ int devid);
 int iotx_dm_subdev_login(_IN_ int devid);
+int iotx_dm_subdev_login_batch(_IN_ int devid, int* sub_devids, int sub_devids_len);
 int iotx_dm_subdev_logout(_IN_ int devid);
 int iotx_dm_get_device_type(_IN_ int devid, _OU_ int *type);
 int iotx_dm_get_device_avail_status(_IN_ int devid, _OU_ iotx_dm_dev_avail_t *status);

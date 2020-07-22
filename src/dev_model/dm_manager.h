@@ -39,7 +39,7 @@ int dm_mgr_get_devid_by_index(_IN_ int index, _OU_ int *devid);
 int dm_mgr_get_next_devid(_IN_ int devid, _OU_ int *devid_next);
 int dm_mgr_search_device_by_devid(_IN_ int devid, _OU_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                                   _OU_ char device_key[IOTX_DEVICE_KEY_LEN + 1], _OU_ char device_secret[IOTX_DEVICE_SECRET_LEN + 1]);
-int dm_mgr_search_device_by_pkdn(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
+int dm_mgr_search_device_by_pkdk(_IN_ char product_key[IOTX_PRODUCT_KEY_LEN + 1],
                                  _IN_ char device_key[IOTX_DEVICE_KEY_LEN + 1],
                                  _OU_ int *devid);
 int dm_mgr_search_device_node_by_devid(_IN_ int devid, _OU_ void **node);
@@ -57,14 +57,12 @@ int dm_mgr_dev_initialized(int devid);
 
 
 #ifdef DEVICE_MODEL_GATEWAY
-    int dm_mgr_upstream_thing_sub_register(_IN_ int devid);
-    int dm_mgr_upstream_thing_proxy_product_register(_IN_ int devid);
-    int dm_mgr_upstream_thing_sub_unregister(_IN_ int devid);
+    int dm_mgr_upstream_thing_device_register(_IN_ int devid);
     int dm_mgr_upstream_thing_topo_add(_IN_ int devid);
     int dm_mgr_upstream_thing_topo_delete(_IN_ int devid);
     int dm_mgr_upstream_thing_topo_get(void);
-    int dm_mgr_upstream_thing_list_found(_IN_ int devid);
     int dm_mgr_upstream_combine_login(_IN_ int devid);
+    int dm_mgr_upstream_combine_login_batch(_IN_ int devid, _IN_ int* sub_devids, _IN_ int sub_devids_len);
     int dm_mgr_upstream_combine_logout(_IN_ int devid);
 #endif
 int dm_mgr_upstream_thing_model_up_raw(_IN_ int devid, _IN_ char *payload, _IN_ int payload_len);

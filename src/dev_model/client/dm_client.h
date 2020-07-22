@@ -45,9 +45,12 @@ void dm_client_thing_topo_add_notify(int fd, const char *topic, const char *payl
 void dm_client_thing_disable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context);
 void dm_client_thing_enable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context);
 void dm_client_thing_delete(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context);
+void dm_client_combine_disable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context);
+void dm_client_combine_enable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context);
+void dm_client_combine_delete(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context);
 void dm_client_thing_gateway_permit(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                     void *context);
-void dm_client_thing_sub_register_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
+void dm_client_thing_device_register_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                         void *context);
 void dm_client_thing_proxy_product_register_reply(int fd, const char *topic, const char *payload,
         unsigned int payload_len,
@@ -63,6 +66,8 @@ void dm_client_thing_topo_get_reply(int fd, const char *topic, const char *paylo
 void dm_client_thing_list_found_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                       void *context);
 void dm_client_combine_login_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
+                                   void *context);
+void dm_client_combine_login_batch_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                    void *context);
 void dm_client_combine_logout_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                     void *context);

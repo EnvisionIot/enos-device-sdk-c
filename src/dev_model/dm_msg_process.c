@@ -71,34 +71,33 @@ const char DM_URI_THING_MODEL_UP_RAW_REPLY[]          DM_READ_ONLY = "thing/mode
 
 #ifdef DEVICE_MODEL_GATEWAY
     /* From Cloud To Local Request And Response*/
-    const char DM_URI_THING_TOPO_ADD_NOTIFY[]             DM_READ_ONLY = "thing/topo/add/notify";
-    const char DM_URI_THING_TOPO_ADD_NOTIFY_REPLY[]       DM_READ_ONLY = "thing/topo/add/notify_reply";
     const char DM_URI_THING_DELETE[]                      DM_READ_ONLY = "thing/delete";
     const char DM_URI_THING_DELETE_REPLY[]                DM_READ_ONLY = "thing/delete_reply";
     const char DM_URI_THING_DISABLE[]                     DM_READ_ONLY = "thing/disable";
     const char DM_URI_THING_DISABLE_REPLY[]               DM_READ_ONLY = "thing/disable_reply";
     const char DM_URI_THING_ENABLE[]                      DM_READ_ONLY = "thing/enable";
     const char DM_URI_THING_ENABLE_REPLY[]                DM_READ_ONLY = "thing/enable_reply";
-    const char DM_URI_THING_GATEWAY_PERMIT[]              DM_READ_ONLY = "thing/gateway/permit";
-    const char DM_URI_THING_GATEWAY_PERMIT_REPLY[]        DM_READ_ONLY = "thing/gateway/permit_reply";
+
+    const char DM_URI_COMBINE_DELETE[]                      DM_READ_ONLY = "combine/delete";
+    const char DM_URI_COMBINE_DELETE_REPLY[]                DM_READ_ONLY = "combine/delete_reply";
+    const char DM_URI_COMBINE_DISABLE[]                     DM_READ_ONLY = "combine/disable";
+    const char DM_URI_COMBINE_DISABLE_REPLY[]               DM_READ_ONLY = "combine/disable_reply";
+    const char DM_URI_COMBINE_ENABLE[]                      DM_READ_ONLY = "combine/enable";
+    const char DM_URI_COMBINE_ENABLE_REPLY[]                DM_READ_ONLY = "combine/enable_reply";
 
     /* From Local To Cloud Request And Response*/
-    const char DM_URI_THING_SUB_REGISTER[]                 DM_READ_ONLY = "thing/sub/register";
-    const char DM_URI_THING_SUB_REGISTER_REPLY[]           DM_READ_ONLY = "thing/sub/register_reply";
-    const char DM_URI_THING_PROXY_PRODUCT_REGISTER[]       DM_READ_ONLY = "thing/proxy/provisioning/product_register";
-    const char DM_URI_THING_PROXY_PRODUCT_REGISTER_REPLY[] DM_READ_ONLY = "thing/proxy/provisioning/product_register_reply";
-    const char DM_URI_THING_SUB_UNREGISTER[]               DM_READ_ONLY = "thing/sub/unregister";
-    const char DM_URI_THING_SUB_UNREGISTER_REPLY[]         DM_READ_ONLY = "thing/sub/unregister_reply";
+    const char DM_URI_THING_DEVICE_REGISTER[]              DM_READ_ONLY = "thing/device/register";
+    const char DM_URI_THING_DEVICE_REGISTER_REPLY[]        DM_READ_ONLY = "thing/device/register_reply";
     const char DM_URI_THING_TOPO_ADD[]                     DM_READ_ONLY = "thing/topo/add";
     const char DM_URI_THING_TOPO_ADD_REPLY[]               DM_READ_ONLY = "thing/topo/add_reply";
     const char DM_URI_THING_TOPO_DELETE[]                  DM_READ_ONLY = "thing/topo/delete";
     const char DM_URI_THING_TOPO_DELETE_REPLY[]            DM_READ_ONLY = "thing/topo/delete_reply";
     const char DM_URI_THING_TOPO_GET[]                     DM_READ_ONLY = "thing/topo/get";
     const char DM_URI_THING_TOPO_GET_REPLY[]               DM_READ_ONLY = "thing/topo/get_reply";
-    const char DM_URI_THING_LIST_FOUND[]                   DM_READ_ONLY = "thing/list/found";
-    const char DM_URI_THING_LIST_FOUND_REPLY[]             DM_READ_ONLY = "thing/list/found_reply";
     const char DM_URI_COMBINE_LOGIN[]                      DM_READ_ONLY = "combine/login";
     const char DM_URI_COMBINE_LOGIN_REPLY[]                DM_READ_ONLY = "combine/login_reply";
+    const char DM_URI_COMBINE_LOGIN_BATCH[]                DM_READ_ONLY = "combine/login/batch";
+    const char DM_URI_COMBINE_LOGIN_BATCH_REPLY[]          DM_READ_ONLY = "combine/login/batch_reply";
     const char DM_URI_COMBINE_LOGOUT[]                     DM_READ_ONLY = "combine/logout";
     const char DM_URI_COMBINE_LOGOUT_REPLY[]               DM_READ_ONLY = "combine/logout_reply";
 #endif
@@ -159,7 +158,7 @@ int dm_msg_proc_thing_measurepoint_set(_IN_ dm_msg_source_t *source, _IN_ dm_msg
         return res;
     }
 
-    res = dm_mgr_search_device_by_pkdn(product_key, device_key, &devid);
+    res = dm_mgr_search_device_by_pkdk(product_key, device_key, &devid);
     if (res < SUCCESS_RETURN) {
         return res;
     }
@@ -266,43 +265,6 @@ int dm_msg_proc_thing_reply(_IN_ dm_msg_source_t *source)
 #endif
 
 #ifdef DEVICE_MODEL_GATEWAY
-int dm_msg_proc_thing_topo_add_notify(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
-                                      _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response)
-{
-    int res = 0;
-    char product_key[IOTX_PRODUCT_KEY_LEN + 1] = {0};
-    char device_key[IOTX_DEVICE_KEY_LEN + 1] = {0};
-
-    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_TOPO_ADD_NOTIFY);
-
-    /* Request */
-    res = dm_msg_uri_parse_pkdn((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
-                                device_key);
-    if (res < SUCCESS_RETURN) {
-        return res;
-    }
-
-    res = dm_msg_request_parse((char *)source->payload, source->payload_len, request);
-    if (res < SUCCESS_RETURN) {
-        return res ;
-    }
-
-    /* Operation */
-    res = dm_msg_topo_add_notify(request->params.value, request->params.value_length);
-    if (res < SUCCESS_RETURN) {
-        return res ;
-    }
-
-    /* Response */
-    response->reply_prefix = DM_URI_SYS_PREFIX;
-    response->reply_name = dest->uri_name;
-    memcpy(response->product_key, product_key, strlen(product_key));
-    memcpy(response->device_key, device_key, strlen(device_key));
-    response->code = (res == SUCCESS_RETURN) ? (IOTX_DM_ERR_CODE_SUCCESS) : (IOTX_DM_ERR_CODE_REQUEST_ERROR);
-
-    return SUCCESS_RETURN;
-}
-
 int dm_msg_proc_thing_disable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
                               _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response)
 {
@@ -313,7 +275,7 @@ int dm_msg_proc_thing_disable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *
     iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DISABLE);
 
     /* Request */
-    res = dm_msg_uri_parse_pkdn((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
+    res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
                                 device_key);
     if (res < SUCCESS_RETURN) {
         return res;
@@ -347,7 +309,7 @@ int dm_msg_proc_thing_enable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *d
     iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DISABLE);
 
     /* Request */
-    res = dm_msg_uri_parse_pkdn((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
+    res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
                                 device_key);
     if (res < SUCCESS_RETURN) {
         return res;
@@ -381,7 +343,7 @@ int dm_msg_proc_thing_delete(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *d
     iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DELETE);
 
     /* Request */
-    res = dm_msg_uri_parse_pkdn((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
+    res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
                                 device_key);
     if (res < SUCCESS_RETURN) {
         return res;
@@ -405,32 +367,47 @@ int dm_msg_proc_thing_delete(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *d
     return SUCCESS_RETURN;
 }
 
-int dm_msg_proc_thing_gateway_permit(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
-                                     _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response)
+int dm_msg_proc_combine_disable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
+                              _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response)
 {
     int res = 0;
     char product_key[IOTX_PRODUCT_KEY_LEN + 1] = {0};
     char device_key[IOTX_DEVICE_KEY_LEN + 1] = {0};
+    lite_cjson_t lite_product_key;
+    lite_cjson_t lite_device_key;
 
-    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DELETE);
-
-    /* Request */
-    res = dm_msg_uri_parse_pkdn((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
-                                device_key);
-    if (res < SUCCESS_RETURN) {
-        return res;
-    }
+    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DISABLE);
 
     res = dm_msg_request_parse((char *)source->payload, source->payload_len, request);
     if (res != SUCCESS_RETURN) {
         return res;
     }
+    
+    res = lite_cjson_object_item(&request->params, DM_MSG_KEY_PRODUCT_KEY, strlen(DM_MSG_KEY_PRODUCT_KEY), &lite_product_key);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+    res = lite_cjson_object_item(&request->params, DM_MSG_KEY_DEVICE_KEY, strlen(DM_MSG_KEY_DEVICE_KEY), &lite_device_key);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+    memcpy(product_key, lite_product_key.value, lite_product_key.value_length);
+    memcpy(device_key, lite_device_key.value, lite_device_key.value_length);
 
     /* Operation */
-    res = dm_msg_thing_gateway_permit(request->params.value, request->params.value_length);
+    res = dm_msg_combine_disable(product_key, device_key);
+
+    /* pk and dk for Response to cloud */
+    memset(product_key, 0, IOTX_PRODUCT_KEY_LEN + 1);
+    memset(device_key, 0, IOTX_DEVICE_KEY_LEN + 1);
+    res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
+                                device_key);
+    if (res < SUCCESS_RETURN) {
+        return res;
+    }
 
     /* Response */
-    response->reply_prefix = DM_URI_SYS_PREFIX;
+    response->reply_prefix = DM_URI_EXT_SESSION_PREFIX;
     response->reply_name = dest->uri_name;
     memcpy(response->product_key, product_key, strlen(product_key));
     memcpy(response->device_key, device_key, strlen(device_key));
@@ -439,74 +416,105 @@ int dm_msg_proc_thing_gateway_permit(_IN_ dm_msg_source_t *source, _IN_ dm_msg_d
     return SUCCESS_RETURN;
 }
 
-int dm_msg_proc_thing_sub_register_reply(_IN_ dm_msg_source_t *source)
+int dm_msg_proc_combine_enable(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
+                              _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response)
 {
     int res = 0;
-    dm_msg_response_payload_t response;
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    char int_id[DM_UTILS_UINT32_STRLEN + 1] = {0};
-#endif
+    char product_key[IOTX_PRODUCT_KEY_LEN + 1] = {0};
+    char device_key[IOTX_DEVICE_KEY_LEN + 1] = {0};
+    lite_cjson_t lite_product_key;
+    lite_cjson_t lite_device_key;
 
-    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_SUB_REGISTER_REPLY);
+    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DISABLE);
 
-    memset(&response, 0, sizeof(dm_msg_response_payload_t));
-
-    /* Response */
-    res = dm_msg_response_parse((char *)source->payload, source->payload_len, &response);
+    res = dm_msg_request_parse((char *)source->payload, source->payload_len, request);
     if (res != SUCCESS_RETURN) {
         return res;
     }
+    
+    res = lite_cjson_object_item(&request->params, DM_MSG_KEY_PRODUCT_KEY, strlen(DM_MSG_KEY_PRODUCT_KEY), &lite_product_key);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+    res = lite_cjson_object_item(&request->params, DM_MSG_KEY_DEVICE_KEY, strlen(DM_MSG_KEY_DEVICE_KEY), &lite_device_key);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+    memcpy(product_key, lite_product_key.value, lite_product_key.value_length);
+    memcpy(device_key, lite_device_key.value, lite_device_key.value_length);
 
     /* Operation */
-    dm_msg_thing_sub_register_reply(&response);
+    res = dm_msg_combine_enable(product_key, device_key);
 
-    /* Remove Message From Cache */
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    if (response.id.value_length > DM_UTILS_UINT32_STRLEN) {
-        return STATE_DEV_MODEL_WRONG_JSON_FORMAT;
+    /* pk and dk for Response to cloud */
+    memset(product_key, 0, IOTX_PRODUCT_KEY_LEN + 1);
+    memset(device_key, 0, IOTX_DEVICE_KEY_LEN + 1);
+    res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
+                                device_key);
+    if (res < SUCCESS_RETURN) {
+        return res;
     }
-    memcpy(int_id, response.id.value, response.id.value_length);
-    dm_msg_cache_remove(atoi(int_id));
-#endif
+
+    /* Response */
+    response->reply_prefix = DM_URI_EXT_SESSION_PREFIX;
+    response->reply_name = dest->uri_name;
+    memcpy(response->product_key, product_key, strlen(product_key));
+    memcpy(response->device_key, device_key, strlen(device_key));
+    response->code = (res == SUCCESS_RETURN) ? (IOTX_DM_ERR_CODE_SUCCESS) : (IOTX_DM_ERR_CODE_REQUEST_ERROR);
 
     return SUCCESS_RETURN;
 }
 
-int dm_msg_proc_thing_proxy_product_register_reply(_IN_ dm_msg_source_t *source)
+int dm_msg_proc_combine_delete(_IN_ dm_msg_source_t *source, _IN_ dm_msg_dest_t *dest,
+                              _OU_ dm_msg_request_payload_t *request, _OU_ dm_msg_response_t *response)
 {
     int res = 0;
-    dm_msg_response_payload_t response;
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    char int_id[DM_UTILS_UINT32_STRLEN + 1] = {0};
-#endif
+    char product_key[IOTX_PRODUCT_KEY_LEN + 1] = {0};
+    char device_key[IOTX_DEVICE_KEY_LEN + 1] = {0};
+    lite_cjson_t lite_product_key;
+    lite_cjson_t lite_device_key;
 
-    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_PROXY_PRODUCT_REGISTER_REPLY);
+    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DISABLE);
 
-    memset(&response, 0, sizeof(dm_msg_response_payload_t));
-
-    /* Response */
-    res = dm_msg_response_parse((char *)source->payload, source->payload_len, &response);
+    res = dm_msg_request_parse((char *)source->payload, source->payload_len, request);
     if (res != SUCCESS_RETURN) {
         return res;
     }
+    
+    res = lite_cjson_object_item(&request->params, DM_MSG_KEY_PRODUCT_KEY, strlen(DM_MSG_KEY_PRODUCT_KEY), &lite_product_key);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+    res = lite_cjson_object_item(&request->params, DM_MSG_KEY_DEVICE_KEY, strlen(DM_MSG_KEY_DEVICE_KEY), &lite_device_key);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+    memcpy(product_key, lite_product_key.value, lite_product_key.value_length);
+    memcpy(device_key, lite_device_key.value, lite_device_key.value_length);
 
     /* Operation */
-    dm_msg_thing_proxy_product_register_reply(&response);
+    res = dm_msg_combine_delete(product_key, device_key);
 
-    /* Remove Message From Cache */
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    if (response.id.value_length > DM_UTILS_UINT32_STRLEN) {
-        return STATE_DEV_MODEL_WRONG_JSON_FORMAT;
+    /* pk and dk for Response to cloud */
+    memset(product_key, 0, IOTX_PRODUCT_KEY_LEN + 1);
+    memset(device_key, 0, IOTX_DEVICE_KEY_LEN + 1);
+    res = dm_msg_uri_parse_pkdk((char *)source->uri, strlen(source->uri), 2 + DM_URI_OFFSET, 4 + DM_URI_OFFSET, product_key,
+                                device_key);
+    if (res < SUCCESS_RETURN) {
+        return res;
     }
-    memcpy(int_id, response.id.value, response.id.value_length);
-    dm_msg_cache_remove(atoi(int_id));
-#endif
-    return SUCCESS_RETURN;
+    
+    /* Response */
+    response->reply_prefix = DM_URI_EXT_SESSION_PREFIX;
+    response->reply_name = dest->uri_name;
+    memcpy(response->product_key, product_key, strlen(product_key));
+    memcpy(response->device_key, device_key, strlen(device_key));
+    response->code = (res == SUCCESS_RETURN) ? (IOTX_DM_ERR_CODE_SUCCESS) : (IOTX_DM_ERR_CODE_REQUEST_ERROR);
 
-    return 0;
+    return SUCCESS_RETURN;
 }
 
-int dm_msg_proc_thing_sub_unregister_reply(_IN_ dm_msg_source_t *source)
+int dm_msg_proc_thing_device_register_reply(_IN_ dm_msg_source_t *source)
 {
     int res = 0;
     dm_msg_response_payload_t response;
@@ -514,7 +522,7 @@ int dm_msg_proc_thing_sub_unregister_reply(_IN_ dm_msg_source_t *source)
     char int_id[DM_UTILS_UINT32_STRLEN + 1] = {0};
 #endif
 
-    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_SUB_UNREGISTER_REPLY);
+    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_DEVICE_REGISTER_REPLY);
 
     memset(&response, 0, sizeof(dm_msg_response_payload_t));
 
@@ -525,7 +533,7 @@ int dm_msg_proc_thing_sub_unregister_reply(_IN_ dm_msg_source_t *source)
     }
 
     /* Operation */
-    dm_msg_thing_sub_unregister_reply(&response);
+    dm_msg_thing_device_register_reply(&response);
 
     /* Remove Message From Cache */
 #if !defined(DM_MESSAGE_CACHE_DISABLED)
@@ -535,6 +543,7 @@ int dm_msg_proc_thing_sub_unregister_reply(_IN_ dm_msg_source_t *source)
     memcpy(int_id, response.id.value, response.id.value_length);
     dm_msg_cache_remove(atoi(int_id));
 #endif
+
     return SUCCESS_RETURN;
 }
 
@@ -634,38 +643,6 @@ int dm_msg_proc_thing_topo_get_reply(_IN_ dm_msg_source_t *source)
     return SUCCESS_RETURN;
 }
 
-int dm_msg_proc_thing_list_found_reply(_IN_ dm_msg_source_t *source)
-{
-    int res = 0;
-    dm_msg_response_payload_t response;
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    char int_id[DM_UTILS_UINT32_STRLEN + 1] = {0};
-#endif
-
-    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_TOPO_GET_REPLY);
-
-    memset(&response, 0, sizeof(dm_msg_response_payload_t));
-
-    /* Response */
-    res = dm_msg_response_parse((char *)source->payload, source->payload_len, &response);
-    if (res != SUCCESS_RETURN) {
-        return res;
-    }
-
-    /* Operation */
-    dm_msg_thing_list_found_reply(&response);
-
-    /* Remove Message From Cache */
-#if !defined(DM_MESSAGE_CACHE_DISABLED)
-    if (response.id.value_length > DM_UTILS_UINT32_STRLEN) {
-        return STATE_DEV_MODEL_WRONG_JSON_FORMAT;
-    }
-    memcpy(int_id, response.id.value, response.id.value_length);
-    dm_msg_cache_remove(atoi(int_id));
-#endif
-    return SUCCESS_RETURN;
-}
-
 int dm_msg_proc_combine_login_reply(_IN_ dm_msg_source_t *source)
 {
     int res = 0;
@@ -686,6 +663,38 @@ int dm_msg_proc_combine_login_reply(_IN_ dm_msg_source_t *source)
 
     /* Operation */
     dm_msg_combine_login_reply(&response);
+
+    /* Remove Message From Cache */
+#if !defined(DM_MESSAGE_CACHE_DISABLED)
+    if (response.id.value_length > DM_UTILS_UINT32_STRLEN) {
+        return STATE_DEV_MODEL_WRONG_JSON_FORMAT;
+    }
+    memcpy(int_id, response.id.value, response.id.value_length);
+    dm_msg_cache_remove(atoi(int_id));
+#endif
+    return SUCCESS_RETURN;
+}
+
+int dm_msg_proc_combine_login_batch_reply(_IN_ dm_msg_source_t *source)
+{
+    int res = 0;
+    dm_msg_response_payload_t response;
+#if !defined(DM_MESSAGE_CACHE_DISABLED)
+    char int_id[DM_UTILS_UINT32_STRLEN + 1] = {0};
+#endif
+
+    iotx_state_event(ITE_STATE_DEV_MODEL, STATE_DEV_MODEL_RX_CLOUD_MESSAGE, DM_URI_THING_TOPO_GET_REPLY);
+
+    memset(&response, 0, sizeof(dm_msg_response_payload_t));
+
+    /* Response */
+    res = dm_msg_response_parse((char *)source->payload, source->payload_len, &response);
+    if (res != SUCCESS_RETURN) {
+        return res;
+    }
+
+    /* Operation */
+    dm_msg_combine_login_batch_reply(&response);
 
     /* Remove Message From Cache */
 #if !defined(DM_MESSAGE_CACHE_DISABLED)

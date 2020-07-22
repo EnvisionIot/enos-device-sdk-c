@@ -43,10 +43,10 @@ typedef struct
 } user_example_ctx_t;
 
 /* direct login */
-char g_product_key[IOTX_PRODUCT_KEY_LEN + 1] = "NzBFdzBM";
-char g_product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "2hqVtvvrPzV";
-char g_device_key[IOTX_DEVICE_KEY_LEN + 1] = "zh_raw_device";
-char g_device_secret[IOTX_DEVICE_SECRET_LEN + 1] = "kojTufWx24Ng4PWwNCx5";
+static char g_product_key[IOTX_PRODUCT_KEY_LEN + 1] = "product_key";
+static char g_product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "product_secret";
+static char g_device_key[IOTX_DEVICE_KEY_LEN + 1] = "device_key";
+static char g_device_secret[IOTX_DEVICE_SECRET_LEN + 1] = "device_secret";
 
 static user_example_ctx_t g_user_example_ctx;
 
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
     IOT_RegisterCallback(ITE_RAWDATA_ARRIVED, user_sample_up_raw_reply);
 
-    char mqtt_uri[50] = "beta-iot-as-mqtt-cn4.eniot.io";
+    char mqtt_uri[50] = "mqtt_domain_url";
     IOT_Ioctl(IOTX_IOCTL_SET_MQTT_DOMAIN, (void *)mqtt_uri);
 
     int mqtt_port = 11883;

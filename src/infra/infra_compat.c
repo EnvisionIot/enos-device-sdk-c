@@ -236,10 +236,6 @@ int IOT_Ioctl(int option, void *data)
         }
         break;
 #if defined(DEVICE_MODEL_GATEWAY)
-        case IOTX_IOCTL_SET_PROXY_REGISTER: {
-            res = iotx_dm_set_opt(DM_OPT_PROXY_PRODUCT_REGISTER, data);
-        }
-        break;
         case IOTX_IOCTL_QUERY_DEVID: {
             iotx_dev_meta_info_t *dev_info = (iotx_dev_meta_info_t *)data;
 
@@ -307,11 +303,15 @@ static impl_event_map_t g_impl_event_map[] = {
     {ITE_SERVICE_REQUEST,                NULL},
     {ITE_MEASUREPOINT_SET,               NULL},
     {ITE_MEASUREPOINT_GET,               NULL},
-    {ITE_REPORT_REPLY,                   NULL},
+/*    {ITE_REPORT_REPLY,                   NULL}, */
     {ITE_THING_REPLY,                    NULL},
-    {ITE_TIMESTAMP_REPLY,                NULL},
-    {ITE_TOPOLIST_REPLY,                 NULL},
-    {ITE_PERMIT_JOIN,                    NULL},
+/*    {ITE_TIMESTAMP_REPLY,                NULL},*/
+    {ITE_TOPO_GET_REPLY,                 NULL},
+/*    {ITE_PERMIT_JOIN,                    NULL},*/
+    {ITE_DEVICE_REGISTER_REPLY,          NULL},
+    {ITE_COMBINE_DISABLE,                 NULL},
+    {ITE_COMBINE_ENABLE,                  NULL},
+    {ITE_COMBINE_DELETE,                  NULL},
     {ITE_INITIALIZE_COMPLETED,           NULL},
     {ITE_MQTT_CONNECT_SUCC,              NULL},
     {ITE_CLOUD_ERROR,                    NULL},
@@ -346,13 +346,15 @@ DEFINE_EVENT_CALLBACK(ITE_RAWDATA_ARRIVED,      int (*callback)(const int, const
 DEFINE_EVENT_CALLBACK(ITE_SERVICE_REQUEST,      int (*callback)(int, const char *, int, const char *, int, void *))
 DEFINE_EVENT_CALLBACK(ITE_MEASUREPOINT_SET,     int (*callback)(const int, const char *, const int, void *))
 DEFINE_EVENT_CALLBACK(ITE_MEASUREPOINT_GET,     int (*callback)(const int, const char *, const int, char **, int *))
-DEFINE_EVENT_CALLBACK(ITE_REPORT_REPLY,         int (*callback)(const int, const int, const int, const char *, const int, const char *, const int))
-DEFINE_EVENT_CALLBACK(ITE_THING_REPLY,  int (*callback)(const int, const int, const int, const char *,
-                      const int, const char *, const int))
-DEFINE_EVENT_CALLBACK(ITE_TIMESTAMP_REPLY,      int (*callback)(const char *))
-DEFINE_EVENT_CALLBACK(ITE_TOPOLIST_REPLY,       int (*callback)(const int, const int, const int, const char *,
-                      const int))
-DEFINE_EVENT_CALLBACK(ITE_PERMIT_JOIN,          int (*callback)(const char *, int))
+/* DEFINE_EVENT_CALLBACK(ITE_REPORT_REPLY,         int (*callback)(const int, const int, const int, const char *, const int, const char *, const int)) */
+DEFINE_EVENT_CALLBACK(ITE_THING_REPLY,          int (*callback)(const int, const int, const int, const char *, const int, const char *, const int))
+/*DEFINE_EVENT_CALLBACK(ITE_TIMESTAMP_REPLY,      int (*callback)(const char *))*/
+DEFINE_EVENT_CALLBACK(ITE_TOPO_GET_REPLY,       int (*callback)(const int, const int, const int, const char *, const int))
+DEFINE_EVENT_CALLBACK(ITE_DEVICE_REGISTER_REPLY,int (*callback)(const int, const int, const int))
+DEFINE_EVENT_CALLBACK(ITE_COMBINE_DISABLE,       int (*callback)(const int))
+DEFINE_EVENT_CALLBACK(ITE_COMBINE_ENABLE,        int (*callback)(const int))
+DEFINE_EVENT_CALLBACK(ITE_COMBINE_DELETE,        int (*callback)(const int, const char*, const int, const char*, const int))
+/*DEFINE_EVENT_CALLBACK(ITE_PERMIT_JOIN,          int (*callback)(const char *, int))*/
 DEFINE_EVENT_CALLBACK(ITE_INITIALIZE_COMPLETED, int (*callback)(const int))
 DEFINE_EVENT_CALLBACK(ITE_MQTT_CONNECT_SUCC,    int (*callback)(void))
 DEFINE_EVENT_CALLBACK(ITE_CLOUD_ERROR,          int (*callback)(const int, const char *, const char *))

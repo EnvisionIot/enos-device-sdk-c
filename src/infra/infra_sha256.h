@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SHA256_DIGEST_LENGTH            (32)
 #define SHA256_BLOCK_LENGTH             (64)
 #define SHA256_SHORT_BLOCK_LENGTH       (SHA256_BLOCK_LENGTH - 8)
@@ -79,6 +83,10 @@ void utils_sha256_process(iot_sha256_context *ctx, const unsigned char data[64])
 void utils_sha256(const uint8_t *input, uint32_t ilen, uint8_t output[32]);
 
 void utils_hmac_sha256(const uint8_t *msg, uint32_t msg_len, const uint8_t *key, uint32_t key_len, uint8_t output[32]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

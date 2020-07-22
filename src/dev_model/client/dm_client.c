@@ -35,20 +35,20 @@ static dm_client_uri_map_t g_dm_client_uri_map[] = {
     {DM_URI_THING_MODEL_UP_RAW_REPLY,           DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_ALL, (void *)dm_client_thing_model_up_raw_reply           },
 
 #ifdef DEVICE_MODEL_GATEWAY
-    {DM_URI_THING_TOPO_ADD_NOTIFY,              DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_topo_add_notify              },
-    {DM_URI_THING_GATEWAY_PERMIT,               DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_gateway_permit               },
-    {DM_URI_THING_SUB_REGISTER_REPLY,           DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_sub_register_reply           },
-    {DM_URI_THING_PROXY_PRODUCT_REGISTER_REPLY, DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_proxy_product_register_reply },
-    {DM_URI_THING_SUB_UNREGISTER_REPLY,         DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_sub_unregister_reply         },
+    {DM_URI_THING_DEVICE_REGISTER_REPLY,        DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_device_register_reply        },
+    
     {DM_URI_THING_TOPO_ADD_REPLY,               DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_topo_add_reply               },
     {DM_URI_THING_TOPO_DELETE_REPLY,            DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_topo_delete_reply            },
     {DM_URI_THING_TOPO_GET_REPLY,               DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_topo_get_reply               },
-    {DM_URI_THING_LIST_FOUND_REPLY,             DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_list_found_reply             },
     {DM_URI_COMBINE_LOGIN_REPLY,                DM_URI_EXT_SESSION_PREFIX, IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_combine_login_reply                },
+    {DM_URI_COMBINE_LOGIN_BATCH_REPLY,          DM_URI_EXT_SESSION_PREFIX, IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_combine_login_batch_reply          },
     {DM_URI_COMBINE_LOGOUT_REPLY,               DM_URI_EXT_SESSION_PREFIX, IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_combine_logout_reply               },
     {DM_URI_THING_DISABLE,                      DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_disable                      },
     {DM_URI_THING_ENABLE,                       DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_enable                       },
     {DM_URI_THING_DELETE,                       DM_URI_SYS_PREFIX,         IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_thing_delete                       },
+    {DM_URI_COMBINE_DISABLE,                    DM_URI_EXT_SESSION_PREFIX, IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_combine_disable                    },
+    {DM_URI_COMBINE_ENABLE,                     DM_URI_EXT_SESSION_PREFIX, IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_combine_enable                     },
+    {DM_URI_COMBINE_DELETE,                     DM_URI_EXT_SESSION_PREFIX, IOTX_DM_DEVICE_GATEWAY, (void *)dm_client_combine_delete                     },
 #endif
 };
 
@@ -298,35 +298,6 @@ int dm_client_subdev_unsubscribe(char product_key[IOTX_PRODUCT_KEY_LEN + 1], cha
     return SUCCESS_RETURN;
 }
 
-void dm_client_thing_topo_add_notify(int fd, const char *topic, const char *payload, unsigned int payload_len,
-                                     void *context)
-{
-    int res = 0;
-    dm_msg_source_t source;
-    dm_msg_dest_t dest;
-    dm_msg_request_payload_t request;
-    dm_msg_response_t response;
-
-    memset(&source, 0, sizeof(dm_msg_source_t));
-    memset(&dest, 0, sizeof(dm_msg_dest_t));
-    memset(&request, 0, sizeof(dm_msg_request_payload_t));
-    memset(&response, 0, sizeof(dm_msg_response_t));
-
-    source.uri = topic;
-    source.payload = (unsigned char *)payload;
-    source.payload_len = payload_len;
-    source.context = NULL;
-
-    dest.uri_name = DM_URI_THING_TOPO_ADD_NOTIFY_REPLY;
-
-    res = dm_msg_proc_thing_topo_add_notify(&source, &dest, &request, &response);
-    if (res < SUCCESS_RETURN) {
-        return;
-    }
-
-    dm_msg_response(DM_MSG_DEST_CLOUD, &request, &response, "{}", strlen("{}"), NULL);
-}
-
 void dm_client_thing_disable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context)
 {
     int res = 0;
@@ -411,8 +382,7 @@ void dm_client_thing_delete(int fd, const char *topic, const char *payload, unsi
     dm_msg_response(DM_MSG_DEST_CLOUD, &request, &response, "{}", strlen("{}"), NULL);
 }
 
-void dm_client_thing_gateway_permit(int fd, const char *topic, const char *payload, unsigned int payload_len,
-                                    void *context)
+void dm_client_combine_disable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context)
 {
     int res = 0;
     dm_msg_source_t source;
@@ -430,9 +400,9 @@ void dm_client_thing_gateway_permit(int fd, const char *topic, const char *paylo
     source.payload_len = payload_len;
     source.context = NULL;
 
-    dest.uri_name = DM_URI_THING_GATEWAY_PERMIT_REPLY;
+    dest.uri_name = DM_URI_COMBINE_DISABLE_REPLY;
 
-    res = dm_msg_proc_thing_gateway_permit(&source, &dest, &request, &response);
+    res = dm_msg_proc_combine_disable(&source, &dest, &request, &response);
     if (res < SUCCESS_RETURN) {
         return;
     }
@@ -440,9 +410,67 @@ void dm_client_thing_gateway_permit(int fd, const char *topic, const char *paylo
     dm_msg_response(DM_MSG_DEST_CLOUD, &request, &response, "{}", strlen("{}"), NULL);
 }
 
-void dm_client_thing_sub_register_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
+void dm_client_combine_enable(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context)
+{
+    int res = 0;
+    dm_msg_source_t source;
+    dm_msg_dest_t dest;
+    dm_msg_request_payload_t request;
+    dm_msg_response_t response;
+
+    memset(&source, 0, sizeof(dm_msg_source_t));
+    memset(&dest, 0, sizeof(dm_msg_dest_t));
+    memset(&request, 0, sizeof(dm_msg_request_payload_t));
+    memset(&response, 0, sizeof(dm_msg_response_t));
+
+    source.uri = topic;
+    source.payload = (unsigned char *)payload;
+    source.payload_len = payload_len;
+    source.context = NULL;
+
+    dest.uri_name = DM_URI_COMBINE_ENABLE_REPLY;
+
+    res = dm_msg_proc_combine_enable(&source, &dest, &request, &response);
+    if (res < SUCCESS_RETURN) {
+        return;
+    }
+
+    dm_msg_response(DM_MSG_DEST_CLOUD, &request, &response, "{}", strlen("{}"), NULL);
+}
+
+void dm_client_combine_delete(int fd, const char *topic, const char *payload, unsigned int payload_len, void *context)
+{
+    int res = 0;
+    dm_msg_source_t source;
+    dm_msg_dest_t dest;
+    dm_msg_request_payload_t request;
+    dm_msg_response_t response;
+
+    memset(&source, 0, sizeof(dm_msg_source_t));
+    memset(&dest, 0, sizeof(dm_msg_dest_t));
+    memset(&request, 0, sizeof(dm_msg_request_payload_t));
+    memset(&response, 0, sizeof(dm_msg_response_t));
+
+    source.uri = topic;
+    source.payload = (unsigned char *)payload;
+    source.payload_len = payload_len;
+    source.context = NULL;
+
+    dest.uri_name = DM_URI_COMBINE_DELETE_REPLY;
+
+    res = dm_msg_proc_combine_delete(&source, &dest, &request, &response);
+    if (res < SUCCESS_RETURN) {
+        return;
+    }
+
+    dm_msg_response(DM_MSG_DEST_CLOUD, &request, &response, "{}", strlen("{}"), NULL);
+}
+
+
+void dm_client_thing_device_register_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                         void *context)
 {
+    
     dm_msg_source_t source;
 
     memset(&source, 0, sizeof(dm_msg_source_t));
@@ -452,38 +480,7 @@ void dm_client_thing_sub_register_reply(int fd, const char *topic, const char *p
     source.payload_len = payload_len;
     source.context = NULL;
 
-    dm_msg_proc_thing_sub_register_reply(&source);
-}
-
-void dm_client_thing_proxy_product_register_reply(int fd, const char *topic, const char *payload,
-        unsigned int payload_len,
-        void *context)
-{
-    dm_msg_source_t source;
-
-    memset(&source, 0, sizeof(dm_msg_source_t));
-
-    source.uri = topic;
-    source.payload = (unsigned char *)payload;
-    source.payload_len = payload_len;
-    source.context = NULL;
-
-    dm_msg_proc_thing_proxy_product_register_reply(&source);
-}
-
-void dm_client_thing_sub_unregister_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
-        void *context)
-{
-    dm_msg_source_t source;
-
-    memset(&source, 0, sizeof(dm_msg_source_t));
-
-    source.uri = topic;
-    source.payload = (unsigned char *)payload;
-    source.payload_len = payload_len;
-    source.context = NULL;
-
-    dm_msg_proc_thing_sub_unregister_reply(&source);
+    dm_msg_proc_thing_device_register_reply(&source);
 }
 
 void dm_client_thing_topo_add_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
@@ -531,21 +528,6 @@ void dm_client_thing_topo_get_reply(int fd, const char *topic, const char *paylo
     dm_msg_proc_thing_topo_get_reply(&source);
 }
 
-void dm_client_thing_list_found_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
-                                      void *context)
-{
-    dm_msg_source_t source;
-
-    memset(&source, 0, sizeof(dm_msg_source_t));
-
-    source.uri = topic;
-    source.payload = (unsigned char *)payload;
-    source.payload_len = payload_len;
-    source.context = NULL;
-
-    dm_msg_proc_thing_list_found_reply(&source);
-}
-
 void dm_client_combine_login_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
                                    void *context)
 {
@@ -559,6 +541,21 @@ void dm_client_combine_login_reply(int fd, const char *topic, const char *payloa
     source.context = NULL;
 
     dm_msg_proc_combine_login_reply(&source);
+}
+
+void dm_client_combine_login_batch_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,
+                                   void *context)
+{
+    dm_msg_source_t source;
+
+    memset(&source, 0, sizeof(dm_msg_source_t));
+
+    source.uri = topic;
+    source.payload = (unsigned char *)payload;
+    source.payload_len = payload_len;
+    source.context = NULL;
+
+    dm_msg_proc_combine_login_batch_reply(&source);
 }
 
 void dm_client_combine_logout_reply(int fd, const char *topic, const char *payload, unsigned int payload_len,

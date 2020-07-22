@@ -11,6 +11,10 @@
     #include "activation.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef VERSION_NUM_SIZE
     #define VERSION_NUM_SIZE    4
 #endif
@@ -58,6 +62,10 @@ void iotx_set_report_func(info_report_func_pt func);
 int iotx_report_devinfo(void *pclient);
 int iotx_report_mid(void *pclient);
 int iotx_report_firmware_version(void *pclient);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -36,9 +36,11 @@ SRCS_enos-example-device-login-by-ssl    := examples/enos_example_device_login_b
 LIB_SRCS_EXCLUDE          += examples/enos_example_raw.c examples/cJSON.c
 SRCS_enos-example-raw    := examples/enos_example_raw.c examples/cJSON.c
 
+LIB_SRCS_EXCLUDE          += examples/enos_example_gateway_auto.c examples/cJSON.c
+SRCS_enos-example-gateway-auto := examples/enos_example_gateway_auto.c examples/cJSON.c
 
-#LIB_SRCS_EXCLUDE          += examples/enos_example_gateway.c examples/cJSON.c
-#SRCS_enos-example-gateway := examples/enos_example_gateway.c examples/cJSON.c
+LIB_SRCS_EXCLUDE          += examples/enos_example_gateway_batch.c examples/cJSON.c
+SRCS_enos-example-gateway-batch := examples/enos_example_gateway_batch.c examples/cJSON.c
 
 $(call Append_Conditional, TARGET, enos-example-solo, DEVICE_MODEL_ENABLED, BUILD_AOS NO_EXECUTABLES)
 $(call Append_Conditional, TARGET, enos-example-dynamic-activate, DYNAMIC_ACTIVATE, BUILD_AOS NO_EXECUTABLES)
@@ -49,7 +51,5 @@ $(call Append_Conditional, TARGET, enos-example-device-event, DEVICE_MODEL_ENABL
 $(call Append_Conditional, TARGET, enos-example-command, DEVICE_MODEL_ENABLED, BUILD_AOS NO_EXECUTABLES)
 $(call Append_Conditional, TARGET, enos-example-device-login-by-ssl, DEVICE_MODEL_ENABLED, BUILD_AOS NO_EXECUTABLES)
 $(call Append_Conditional, TARGET, enos-example-raw, DEVICE_MODEL_ENABLED, BUILD_AOS NO_EXECUTABLES)
-
-
-
-#$(call Append_Conditional, TARGET, enos-example-gateway, DEVICE_MODEL_GATEWAY, BUILD_AOS NO_EXECUTABLES)
+$(call Append_Conditional, TARGET, enos-example-gateway-auto, DEVICE_MODEL_GATEWAY, BUILD_AOS NO_EXECUTABLES)
+$(call Append_Conditional, TARGET, enos-example-gateway-batch, DEVICE_MODEL_GATEWAY, BUILD_AOS NO_EXECUTABLES)
