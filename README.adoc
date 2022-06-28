@@ -24,7 +24,7 @@ sudo apt-get install -y build-essential make git gcc
 +
 [source,shell]
 ----
-git clone https://github.com/EnvisionIot/enos-iot-mqtt-c-sdk.git
+git clone https://github.com/EnvisionIot/enos-device-sdk-c.git
 ----
 
 === Building the SDK
@@ -33,7 +33,7 @@ Use the following commands to build the SDK:
 
 [source,shell]
 ----
-cd enos-iot-mqtt-c-sdk
+cd enos-device-sdk-c
 make menuconfig   # customize needed features by kconf
 make reconfig     # select configuration for Ubuntu
 make
